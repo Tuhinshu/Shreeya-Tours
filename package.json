@@ -1,0 +1,17 @@
+{
+  "name": "tours-travels-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "cms"
+  ],
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:cms": "npm --prefix cms run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:backend": "npm --prefix backend test"
+  }
+}
