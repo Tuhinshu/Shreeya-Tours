@@ -7,9 +7,9 @@ import ReviewsCarousel from '@/components/ReviewsCarousel';
 
 const HERO_CAROUSEL_IMAGES = [
   {
-    url: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1920&q=85',
-    title: 'Timeless Wonders of Agra',
-    subtitle: 'Taj Mahal & Mughal Architecture'
+    url: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85',
+    title: 'Aravali Hills & Royal Forts',
+    subtitle: 'Rugged Ridges & Historic Bastions'
   },
   {
     url: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1920&q=85',
@@ -17,8 +17,8 @@ const HERO_CAROUSEL_IMAGES = [
     subtitle: "God's Own Country in Kerala"
   },
   {
-    url: 'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1920&q=85',
-    title: 'Royal Forts & Palaces',
+    url: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1920&q=85',
+    title: 'Lakes & Palaces of Udaipur',
     subtitle: 'Heritage & Grandeur of Rajasthan'
   },
   {
@@ -27,9 +27,9 @@ const HERO_CAROUSEL_IMAGES = [
     subtitle: 'Pangong Tso & Leh Ladakh'
   },
   {
-    url: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1920&q=85',
-    title: 'Monument of Unity & Heritage',
-    subtitle: 'Statue of Unity & Western India'
+    url: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1920&q=85',
+    title: 'Western Heritage & Landscapes',
+    subtitle: 'Gujarat, Diu & Statue of Unity'
   }
 ];
 
@@ -62,7 +62,7 @@ export default function HomePage() {
   return (
     <div className="bg-[#FAF9F6] pb-24 overflow-x-hidden">
       
-      {/* 1. HERO CAROUSEL HEADER BANNER WITH ATTRACTIVE RED GRADIENT OVERLAY */}
+      {/* 1. HERO CAROUSEL HEADER BANNER WITH LIGHTER, SEMI-TRANSPARENT RED GRADIENT OVERLAY */}
       <section className="relative h-[85vh] min-h-[540px] w-full overflow-hidden bg-[#590006] text-white">
         
         {/* Background Image Carousel */}
@@ -77,29 +77,32 @@ export default function HomePage() {
               src={slide.url}
               alt={slide.title}
               className="h-full w-full object-cover object-center"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85';
+              }}
             />
           </div>
         ))}
 
-        {/* Attractive Deep Red Gradient Overlay (Rich Brand Crimson & Amber Warmth) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/92 via-[#92000A]/80 to-[#730008]/88 z-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 z-10"></div>
+        {/* Lighter, Semi-Transparent Red Gradient Overlay so Background Carousel Photos are Clearly Visible */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/65 via-[#92000A]/40 to-[#730008]/55 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25 z-10"></div>
 
         {/* Hero Content */}
         <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center z-20">
           <div className="max-w-3xl space-y-6 flex flex-col items-center">
             
             {/* Tagline */}
-            <div className="inline-flex items-center space-x-2 bg-secondary/20 border border-secondary/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-secondary tracking-widest uppercase shadow-sm">
+            <div className="inline-flex items-center space-x-2 bg-black/40 border border-secondary/50 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-secondary tracking-widest uppercase shadow-md">
               <span>TRUSTED INDIAN TRAVEL PARTNER</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-white uppercase drop-shadow-lg">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-white uppercase drop-shadow-xl">
               Uncover the <br className="sm:hidden" />
               <span className="text-secondary font-black bg-clip-text">Magic of India</span>
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg text-red-50 font-medium max-w-xl mx-auto leading-relaxed drop-shadow">
+            <p className="text-sm sm:text-base md:text-lg text-white font-medium max-w-xl mx-auto leading-relaxed drop-shadow-md">
               Experience ancient temples, wild safari reserves, sun-kissed beaches, and timeless architectural marvels. Enjoy hand-crafted tour packages, verified luxury stays, transparent pricing, and 24/7 on-ground support across India.
             </p>
 
@@ -131,8 +134,8 @@ export default function HomePage() {
                   aria-label={`Go to slide ${dotIdx + 1}`}
                   className={`transition-all duration-300 rounded-full cursor-pointer ${
                     dotIdx === currentHeroSlide
-                      ? 'w-8 h-2.5 bg-secondary shadow-md'
-                      : 'w-2.5 h-2.5 bg-white/50 hover:bg-white/80'
+                      ? 'w-8 h-2.5 bg-secondary shadow-lg'
+                      : 'w-2.5 h-2.5 bg-white/60 hover:bg-white/90 shadow'
                   }`}
                 />
               ))}
@@ -222,6 +225,9 @@ export default function HomePage() {
                   alt={tour.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+                  }}
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                   {tour.durationDays} Days

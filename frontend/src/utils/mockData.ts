@@ -35,9 +35,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 11150,
-    featuredImage: 'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
@@ -158,11 +158,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16520,
-    featuredImage: 'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '5 Nights accommodation (3N Port Blair, 1N Swaraj Dweep / Havelock, 1N Shaheed Dweep / Neil)',
@@ -237,7 +237,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -297,9 +297,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 2,
     basePrice: 4999,
-    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80'
     ],
@@ -344,7 +344,7 @@ export const MOCK_TOURS: TourPackage[] = [
     gallery: [
       'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '1 Night accommodation in premium Tent/Bhunga at Rann of Kutch',
@@ -383,10 +383,10 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 3,
     basePrice: 7999,
-    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -539,11 +539,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 5,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '4 Nights stay (2N Vadodara, 2N Ahmedabad in 3-Star hotels)',
@@ -604,10 +604,10 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -688,7 +688,7 @@ export const MOCK_TOURS: TourPackage[] = [
     gallery: [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '8 Nights stay in premium 3*/4* hotels (2N Vadodara, 1N Ahmedabad, 2N Dwarka, 1N Somnath, 1N Diu, 1N Sasan Gir)',
@@ -728,9 +728,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 15499,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
     ],
@@ -795,7 +795,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -905,7 +905,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -934,9 +934,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
     ],
@@ -992,7 +992,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -1056,9 +1056,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 10,
     basePrice: 29999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80'
     ],
@@ -1102,7 +1102,7 @@ export const MOCK_TOURS: TourPackage[] = [
     gallery: [
       'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '4 Nights stay (2N Munnar, 1N Kumarakom, 1N Cochin in comfortable 3* hotels)',
@@ -1394,7 +1394,7 @@ export const MOCK_TOURS: TourPackage[] = [
     gallery: [
       'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '4 Nights stay (2N Jodhpur heritage hotel, 1N Jaisalmer hotel, 1N Sam Sand Dunes Desert Camp)',
@@ -1453,11 +1453,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 6,
     basePrice: 18999,
-    featuredImage: 'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '5 Nights stay (2N Jaipur, 1N Ajmer/Pushkar, 2N Udaipur lake-view stays)',
@@ -1490,7 +1490,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -1574,7 +1574,7 @@ export const MOCK_TOURS: TourPackage[] = [
     gallery: [
       'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '3 Nights stay (2N Rameswaram, 1N Madurai in comfortable 3* hotels)',
@@ -1629,7 +1629,7 @@ export const MOCK_TOURS: TourPackage[] = [
     featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
     gallery: [
       'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
@@ -1660,9 +1660,9 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
     ],

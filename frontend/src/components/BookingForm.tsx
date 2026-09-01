@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 interface BookingFormProps {
   packageId?: string;
@@ -27,6 +27,18 @@ export default function BookingForm({
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Calculate 2-month (60-day) calendar bounds starting from today
+  const { minDate, maxDate } = useMemo(() => {
+    const today = new Date();
+    const min = today.toISOString().split('T')[0];
+
+    const maxDateObj = new Date(today);
+    maxDateObj.setDate(maxDateObj.getDate() + 60); // 60 days window
+    const max = maxDateObj.toISOString().split('T')[0];
+
+    return { minDate: min, maxDate: max };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,6 +67,13 @@ export default function BookingForm({
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Validate that travel date is within the 2-month (60 days) window
+    if (formData.travelDate < minDate || formData.travelDate > maxDate) {
+      alert('Please select a travel date within the next 2 months (60 days).');
+      setLoading(false);
+      return;
+    }
 
     const totalSum = basePrice * formData.pax;
 
@@ -184,16 +203,27 @@ export default function BookingForm({
           <form onSubmit={submitForm} className="space-y-4">
             <h4 className="text-base font-bold text-gray-900 mb-2 uppercase tracking-wide">Step 2: Dates & Travelers</h4>
 
+            {/* Travel Date restricted to 2 months (60 days) */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Preferred Travel Date</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Preferred Travel Date
+                </label>
+                <span className="text-[10px] text-primary font-bold">Within next 60 days</span>
+              </div>
               <input
                 type="date"
                 name="travelDate"
                 required
+                min={minDate}
+                max={maxDate}
                 value={formData.travelDate}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 text-sm"
               />
+              <p className="text-[11px] text-gray-500 mt-1 font-medium">
+                Bookings are accepted up to 2 months (60 days) in advance. Past dates are disabled.
+              </p>
             </div>
 
             {/* Single PAX field */}

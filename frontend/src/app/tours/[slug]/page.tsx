@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { MOCK_TOURS, TourPackage } from '@/utils/mockData';
 import BookingForm from '@/components/BookingForm';
 
+const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+
 export default function TourDetail({ params }: { params: Promise<{ slug: string }> }) {
   const [resolvedParams, setResolvedParams] = useState<{ slug: string } | null>(null);
   const [tour, setTour] = useState<TourPackage | null>(null);
@@ -17,7 +19,7 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
       const foundTour = MOCK_TOURS.find((t) => t.slug === p.slug);
       if (foundTour) {
         setTour(foundTour);
-        setSelectedImage(foundTour.featuredImage);
+        setSelectedImage(foundTour.featuredImage || DEFAULT_FALLBACK_IMAGE);
       }
     });
   }, [params]);
@@ -56,6 +58,9 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
     setActiveDay(activeDay === dayNum ? null : dayNum);
   };
 
+  // Ensure gallery has at least the featured image if empty
+  const galleryImages = tour.gallery && tour.gallery.length > 0 ? tour.gallery : [tour.featuredImage || DEFAULT_FALLBACK_IMAGE];
+
   return (
     <div className="bg-gray-50 pb-16">
       {/* Schema Injection */}
@@ -64,24 +69,28 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
 
-      {/* Detail Header Banner with Authentic Destination Image Backdrop & Red Gradient */}
+      {/* Detail Header Banner with Authentic Destination Image Backdrop & Semi-Transparent Red Gradient */}
       <div className="relative text-white py-16 px-4 overflow-hidden bg-[#590006]">
         <div className="absolute inset-0 z-0">
           <img
-            src={tour.featuredImage}
+            src={tour.featuredImage || DEFAULT_FALLBACK_IMAGE}
             alt={tour.name}
             className="w-full h-full object-cover object-center scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/95 via-[#92000A]/85 to-[#730008]/88"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+          {/* Lighter, Semi-Transparent Red Gradient Overlay so Tour Image is clearly visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/75 via-[#92000A]/55 to-[#730008]/65"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/tours" className="text-white/80 hover:text-white font-semibold text-xs flex items-center space-x-1.5 mb-4 transition-colors">
             <span>←</span> <span>Back to Catalog</span>
           </Link>
-          <div className="flex flex-wrap items-center space-x-2 text-xs text-red-200 font-bold uppercase tracking-wider mb-2">
-            <span className="text-white bg-white/20 px-2.5 py-0.5 rounded text-[10px] uppercase">{tour.tourType} tour</span>
+          <div className="flex flex-wrap items-center space-x-2 text-xs text-secondary font-bold uppercase tracking-wider mb-2">
+            <span className="text-secondary bg-black/40 border border-secondary/40 px-2.5 py-0.5 rounded text-[10px] uppercase font-black">{tour.tourType} tour</span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight uppercase drop-shadow-md">
             {tour.name}
@@ -104,17 +113,20 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
           {/* Left / Middle: Details, Accordion, Inclusions */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Visual Photo Gallery */}
+            {/* Visual Photo Gallery (Supports local assets or props cleanly) */}
             <div className="bg-white rounded-2xl p-4 shadow border border-gray-100 space-y-3">
               <div className="h-[300px] sm:h-[400px] rounded-xl overflow-hidden bg-gray-150 relative">
                 <img
                   src={selectedImage}
                   alt={tour.name}
                   className="w-full h-full object-cover transition-all duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
+                  }}
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {tour.gallery.map((imgUrl, index) => (
+                {galleryImages.map((imgUrl, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(imgUrl)}
@@ -122,7 +134,14 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                       selectedImage === imgUrl ? 'border-primary opacity-100 scale-95 shadow-md' : 'border-transparent opacity-75 hover:opacity-100'
                     }`}
                   >
-                    <img src={imgUrl} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
+                    <img
+                      src={imgUrl}
+                      alt={`Gallery ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
+                      }}
+                    />
                   </button>
                 ))}
               </div>
@@ -142,27 +161,6 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                       <li key={i} className="flex items-start">
                         <span className="text-green-500 mr-2 font-bold">✓</span>
                         <span>{inc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Exclusions */}
-            <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase">Exclusions</h2>
-              
-              <div className="text-sm">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-red-600 flex items-center space-x-1.5">
-                    <span>What&apos;s Excluded</span>
-                  </h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {tour.exclusions.map((exc, i) => (
-                      <li key={i} className="flex items-start">
-                        <span className="text-red-500 mr-2 font-bold">✕</span>
-                        <span>{exc}</span>
                       </li>
                     ))}
                   </ul>

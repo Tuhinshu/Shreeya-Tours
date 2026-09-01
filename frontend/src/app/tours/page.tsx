@@ -1,24 +1,47 @@
 ﻿'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { MOCK_TOURS } from '@/utils/mockData';
 
-export default function TourCatalog() {
+function TourCatalogContent() {
+  const searchParams = useSearchParams();
+  const paramType = searchParams.get('type');
+  const paramRegion = searchParams.get('region');
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  // Derive active region and type (defaulting to URL param or 'all')
+  const activeRegion = selectedRegion ?? paramRegion ?? 'all';
+  const activeType = selectedType ?? paramType ?? 'all';
 
   const filteredTours = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
     return MOCK_TOURS.filter((tour) => {
-      const matchesSearch = tour.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            tour.region.toLowerCase().replace('_', ' ').includes(searchQuery.toLowerCase());
-      const matchesRegion = selectedRegion === 'all' || tour.region === selectedRegion;
-      const matchesType = selectedType === 'all' || tour.tourType === selectedType;
-      
+      // 1. Search Query Match
+      const matchesSearch = !query || 
+        tour.name.toLowerCase().includes(query) || 
+        tour.region.toLowerCase().replace(/_/g, ' ').includes(query) ||
+        tour.tourType.toLowerCase().includes(query) ||
+        tour.inclusions.some((inc) => inc.toLowerCase().includes(query)) ||
+        tour.itinerary.some((day) => 
+          day.title.toLowerCase().includes(query) || 
+          day.description.toLowerCase().includes(query)
+        );
+
+      // 2. Region Match
+      const matchesRegion = activeRegion === 'all' || tour.region === activeRegion;
+
+      // 3. Tour Type Match
+      const matchesType = activeType === 'all' || tour.tourType === activeType;
+
       return matchesSearch && matchesRegion && matchesType;
     });
-  }, [searchQuery, selectedRegion, selectedType]);
+  }, [searchQuery, activeRegion, activeType]);
 
   const regionLabel = (region: string) => {
     switch (region) {
@@ -30,39 +53,31 @@ export default function TourCatalog() {
     }
   };
 
-  const typeLabel = (type: string) => {
-    switch (type) {
-      case 'heritage': return 'Cultural & Heritage';
-      case 'adventure': return 'Trekking & Adventure';
-      case 'leisure': return 'Beach & Leisure';
-      case 'luxury': return 'Luxury Tour';
-      case 'pilgrimage': return 'Religious & Pilgrimage';
-      default: return type;
-    }
-  };
-
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Catalog Hero Banner with Authentic Travel Backdrop and Red Gradient Overlay */}
       <div className="relative text-white py-20 px-4 text-center overflow-hidden bg-[#590006]">
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1920&q=85"
+            src="https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85"
             alt="Incredible India Tour Packages"
             className="w-full h-full object-cover object-center scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1920&q=85';
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/92 via-[#92000A]/85 to-[#730008]/90"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/75 via-[#92000A]/60 to-[#730008]/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
-          <span className="inline-block bg-secondary/20 border border-secondary/40 text-secondary text-xs font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-sm">
+          <span className="inline-block bg-black/40 border border-secondary/50 text-secondary text-xs font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md">
             Handpicked Itineraries
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase drop-shadow-md">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase drop-shadow-lg">
             Indian Tour Packages Catalog
           </h1>
-          <p className="mt-3 text-base sm:text-lg text-red-100 max-w-2xl mx-auto leading-relaxed drop-shadow">
+          <p className="mt-3 text-base sm:text-lg text-white font-medium max-w-2xl mx-auto leading-relaxed drop-shadow">
             Browse our curated hand-crafted tour packages. All bookings include direct WhatsApp support and GST-compliant invoicing.
           </p>
         </div>
@@ -76,7 +91,7 @@ export default function TourCatalog() {
           
           {/* Search bar */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Search Packages</label>
+            <label className="block text-xs font-black uppercase tracking-wider text-gray-700 mb-2">Search Packages</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -87,28 +102,34 @@ export default function TourCatalog() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by destination or package name..."
+                placeholder="Search by state, city, landmark, or package name (e.g. Rajasthan, Goa, Kerala, Temple)..."
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 text-sm shadow-sm"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Region Filter - Removed International */}
+            {/* Region Filter */}
             <div>
-              <span className="block text-sm font-semibold text-gray-700 mb-2.5">Filter by Region</span>
+              <span className="block text-xs font-black uppercase tracking-wider text-gray-700 mb-2.5">Filter by Region</span>
               <div className="flex flex-wrap gap-2">
-                {['all', 'west_india', 'south_india', 'north_india', 'east_india'].map((reg) => (
+                {[
+                  { id: 'all', label: 'All Regions' },
+                  { id: 'west_india', label: 'West India' },
+                  { id: 'south_india', label: 'South India' },
+                  { id: 'north_india', label: 'North India' },
+                  { id: 'east_india', label: 'East India & Islands' },
+                ].map((reg) => (
                   <button
-                    key={reg}
-                    onClick={() => setSelectedRegion(reg)}
+                    key={reg.id}
+                    onClick={() => setSelectedRegion(reg.id)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      selectedRegion === reg
-                        ? 'bg-primary text-white shadow-sm'
+                      activeRegion === reg.id
+                        ? 'bg-primary text-white shadow-md'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
-                    {reg === 'all' ? 'All Regions' : regionLabel(reg)}
+                    {reg.label}
                   </button>
                 ))}
               </div>
@@ -116,19 +137,25 @@ export default function TourCatalog() {
 
             {/* Tour Type Filter */}
             <div>
-              <span className="block text-sm font-semibold text-gray-700 mb-2.5">Tour Category</span>
+              <span className="block text-xs font-black uppercase tracking-wider text-gray-700 mb-2.5">Tour Category</span>
               <div className="flex flex-wrap gap-2">
-                {['all', 'heritage', 'adventure', 'leisure', 'pilgrimage'].map((type) => (
+                {[
+                  { id: 'all', label: 'All Categories' },
+                  { id: 'heritage', label: 'Cultural & Heritage' },
+                  { id: 'adventure', label: 'Trekking & Adventure' },
+                  { id: 'leisure', label: 'Beach & Leisure' },
+                  { id: 'pilgrimage', label: 'Religious & Pilgrimage' },
+                ].map((type) => (
                   <button
-                    key={type}
-                    onClick={() => setSelectedType(type)}
+                    key={type.id}
+                    onClick={() => setSelectedType(type.id)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      selectedType === type
-                        ? 'bg-secondary text-primary shadow-sm font-extrabold'
+                      activeType === type.id
+                        ? 'bg-secondary text-primary shadow-md font-extrabold'
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
-                    {type === 'all' ? 'All Categories' : typeLabel(type)}
+                    {type.label}
                   </button>
                 ))}
               </div>
@@ -138,10 +165,10 @@ export default function TourCatalog() {
 
         {/* Results Info */}
         <div className="flex justify-between items-center mb-6">
-          <p className="text-sm font-bold text-gray-500">
-            Showing <span className="text-gray-900 font-extrabold">{filteredTours.length}</span> Tour Packages
+          <p className="text-sm font-bold text-gray-600">
+            Showing <span className="text-primary font-black">{filteredTours.length}</span> Tour Packages
           </p>
-          {(selectedRegion !== 'all' || selectedType !== 'all' || searchQuery) && (
+          {(activeRegion !== 'all' || activeType !== 'all' || searchQuery) && (
             <button
               onClick={() => {
                 setSelectedRegion('all');
@@ -160,15 +187,25 @@ export default function TourCatalog() {
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-150 shadow-sm max-w-lg mx-auto">
             <p className="text-lg font-bold text-gray-800">No packages found</p>
             <p className="text-xs text-gray-500 mt-2">
-              We couldn&apos;t find any tour packages matching your search criteria. Try modifying your filter options.
+              We couldn&apos;t find any tour packages matching your search criteria. Try modifying your filter options or clearing search keywords.
             </p>
+            <button
+              onClick={() => {
+                setSelectedRegion('all');
+                setSelectedType('all');
+                setSearchQuery('');
+              }}
+              className="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow cursor-pointer hover:bg-primary-hover transition"
+            >
+              Show All Packages
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTours.map((tour) => (
               <div
                 key={tour.id}
-                className="bg-white rounded-2xl shadow border border-gray-150 overflow-hidden flex flex-col group hover:shadow-lg transition-all"
+                className="bg-white rounded-2xl shadow border border-gray-150 overflow-hidden flex flex-col group hover:shadow-lg transition-all hover-card-pop"
               >
                 {/* Image Container */}
                 <div className="h-56 w-full relative overflow-hidden bg-gray-100">
@@ -177,6 +214,9 @@ export default function TourCatalog() {
                     alt={tour.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+                    }}
                   />
                   <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                     {tour.durationDays} Days
@@ -190,7 +230,7 @@ export default function TourCatalog() {
                 <div className="p-6 flex flex-col flex-grow">
                   <div className="flex justify-between items-center text-xs text-gray-400 font-bold uppercase mb-2">
                     <span>{regionLabel(tour.region)}</span>
-                    <span className="flex items-center text-yellow-500 font-bold">
+                    <span className="flex items-center text-amber-500 font-bold">
                       ★ <span className="ml-1 text-gray-700">{tour.rating}</span>
                       <span className="text-gray-400 font-normal ml-0.5">({tour.reviewsCount})</span>
                     </span>
@@ -215,7 +255,7 @@ export default function TourCatalog() {
                     </div>
                     <Link
                       href={`/tours/${tour.slug}`}
-                      className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
+                      className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
                     >
                       View Details
                     </Link>
@@ -228,5 +268,17 @@ export default function TourCatalog() {
 
       </div>
     </div>
+  );
+}
+
+export default function TourCatalog() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <TourCatalogContent />
+    </Suspense>
   );
 }
