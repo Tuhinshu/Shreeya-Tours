@@ -35,10 +35,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 11150,
-    featuredImage: 'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '3 Nights accommodation in Port Blair in selected base category rooms',
@@ -92,10 +93,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 14350,
-    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '4 Nights accommodation (2N Port Blair, 1N Swaraj Dweep / Havelock, 1N Shaheed Dweep / Neil)',
@@ -156,10 +158,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16520,
-    featuredImage: 'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1473116763269-25541579ffb7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1589392682842-db34c7b65d2b?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '5 Nights accommodation (3N Port Blair, 1N Swaraj Dweep / Havelock, 1N Shaheed Dweep / Neil)',
@@ -231,10 +234,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 9999,
-    featuredImage: 'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11cc3?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '3 Nights accommodation in a 3-Star beach-side resort',
@@ -293,8 +297,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 2,
     basePrice: 4999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '1 Night accommodation in Vadodara/Kevadia in comfortable 3* hotel',
       'Daily breakfast at hotel',
@@ -332,8 +340,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 2,
     basePrice: 5499,
-    featuredImage: 'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '1 Night accommodation in premium Tent/Bhunga at Rann of Kutch',
       'Daily breakfast and traditional dinner',
@@ -371,8 +383,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 3,
     basePrice: 7999,
-    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '2 Nights accommodation in a premium 3* hotel in Vadodara',
       'Daily breakfast at hotel',
@@ -416,8 +432,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 3,
     basePrice: 8999,
-    featuredImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '1 Night accommodation in Dwarka, 1 Night in Somnath (Comfortable 3* hotels)',
       'Daily breakfast at hotels',
@@ -462,8 +482,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 4,
     basePrice: 12999,
-    featuredImage: 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights stay (1N Dwarka, 1N Somnath, 1N Sasan Gir Wildlife Resort)',
       'Daily breakfast at all hotels/resorts',
@@ -515,8 +539,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 5,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (2N Vadodara, 2N Ahmedabad in 3-Star hotels)',
       'Daily breakfast buffet',
@@ -576,11 +604,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '6 Nights accommodation in premium 3* and heritage stays (2N Vadodara, 1N Ahmedabad, 2N Dwarka, 1N Somnath)',
@@ -656,8 +684,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 9,
     basePrice: 28999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '8 Nights stay in premium 3*/4* hotels (2N Vadodara, 1N Ahmedabad, 2N Dwarka, 1N Somnath, 1N Diu, 1N Sasan Gir)',
       'Daily breakfast at all hotels/resorts',
@@ -696,10 +728,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 15499,
-    featuredImage: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '4 Nights accommodation in 3* hotels & hill resorts (1N Mysore, 2N Coorg, 1N Bangalore)',
@@ -759,8 +792,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 4,
     basePrice: 13999,
-    featuredImage: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights stay (1N Mysore in comfortable 3* hotel, 2N Kabini jungle resort)',
       'Daily breakfast at hotels, lunch & dinner included at Kabini resort',
@@ -810,8 +847,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 12999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights stay (1N Hassan, 2N Chikmagalur coffee resort)',
       'Daily breakfast at hotels',
@@ -861,8 +902,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 4,
     basePrice: 13499,
-    featuredImage: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights stay (1N Mysore, 2N Bandipur Wildlife Lodge)',
       'Daily breakfast, lunch & dinner included at Bandipur',
@@ -889,8 +934,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights accommodation (2N Hospet/Hampi, 1N Badami in 3* hotels)',
       'Daily breakfast at hotel',
@@ -940,8 +989,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (2N Hospet, 1N Badami, 1N Dandeli river resort)',
       'Daily breakfast at hotels, lunch and dinner included in Dandeli',
@@ -969,8 +1022,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights stay (1N Mangalore, 1N Udupi, 1N Murudeshwara, 2N Gokarna in 3* properties)',
       'Daily breakfast at hotels',
@@ -999,8 +1056,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 10,
     basePrice: 29999,
-    featuredImage: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '9 Nights stay (2N Hospet/Hampi, 1N Badami, 1N Dandeli, 1N Karwar, 1N Murudeshwara, 1N Udupi, 2N Mangalore)',
       'Daily breakfast at hotels, lunch and dinner included in Dandeli',
@@ -1037,8 +1098,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (2N Munnar, 1N Kumarakom, 1N Cochin in comfortable 3* hotels)',
       'Daily breakfast at all hotels/resorts',
@@ -1095,8 +1160,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (2N Munnar, 1N Thekkady, 1N Kumarakom/Cochin)',
       'Daily breakfast at all hotels/resorts',
@@ -1124,8 +1193,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (1N Kumarakom, 1N Private Premium Houseboat in Alleppey, 2N Kovalam beach resort)',
       'All meals (lunch, dinner, breakfast) included on Houseboat stay',
@@ -1154,10 +1227,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '6 Nights stay (1N Cochin, 2N Munnar, 1N Thekkady, 1N Private Houseboat in Alleppey, 1N Cochin)',
@@ -1190,11 +1264,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 8,
     basePrice: 26999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '7 Nights stay (1N Cochin, 2N Munnar, 1N Thekkady, 1N Private Houseboat in Alleppey, 2N Kovalam)',
@@ -1275,8 +1349,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 9,
     basePrice: 28999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '8 Nights accommodation (1N Cochin, 2N Munnar, 1N Thekkady, 1N Kumarakom, 1N Alleppey Houseboat, 2N Kovalam)',
       'All meals on Houseboat, daily breakfast at other stays',
@@ -1312,8 +1390,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '4 Nights stay (2N Jodhpur heritage hotel, 1N Jaisalmer hotel, 1N Sam Sand Dunes Desert Camp)',
       'Traditional welcome, camel safari, and desert folk dance with dinner at Sam camp',
@@ -1371,8 +1453,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 6,
     basePrice: 18999,
-    featuredImage: 'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights stay (2N Jaipur, 1N Ajmer/Pushkar, 2N Udaipur lake-view stays)',
       'Daily breakfast at hotels',
@@ -1401,10 +1487,11 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80',
+    featuredImage: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80'
     ],
     inclusions: [
       '6 Nights stay (2N Jaipur, 2N Jodhpur, 2N Udaipur in Heritage / 3-Star hotels)',
@@ -1483,8 +1570,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '3 Nights stay (2N Rameswaram, 1N Madurai in comfortable 3* hotels)',
       'Daily breakfast at hotels',
@@ -1535,8 +1626,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 6,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights stay (1N Chennai, 1N Mahabalipuram, 1N Kumbakonam, 1N Tanjore, 1N Madurai)',
       'Daily breakfast at hotels',
@@ -1565,8 +1660,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights stay (3N Ooty hill resort, 2N Kodaikanal resort)',
       'Daily breakfast at resorts',
@@ -1599,8 +1698,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 6,
     basePrice: 24999,
-    featuredImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights accommodation in selected stays (3N Leh, 1N Nubra Valley, 1N Pangong Lake)',
       'Daily breakfast & dinner at all hotels/camps',
@@ -1629,8 +1732,12 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 18999,
-    featuredImage: 'https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80',
-    gallery: ['https://images.unsplash.com/photo-1600100397608-f010e42ec97c?auto=format&fit=crop&w=800&q=80'],
+    featuredImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80'
+    ],
     inclusions: [
       '5 Nights accommodation (2N Shimla, 3N Manali in comfortable 3* hotels)',
       'Daily breakfast and dinner at hotels',

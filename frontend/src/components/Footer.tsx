@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -11,8 +11,8 @@ export default function Footer() {
             <Link href="/" className="inline-block bg-white p-3 rounded-xl shadow-md hover:opacity-95 transition-opacity">
               <img src="/logo.png" alt="Shreeya Tours" className="h-18 w-auto object-contain" />
             </Link>
-            <p className="text-xs text-red-200">
-              Experience the Difference. Explore cultural heritage, adventure routes, pilgrimage tours and luxury beach holidays. Registered with Ministry of Tourism.
+            <p className="text-xs text-red-200 leading-relaxed">
+              Experience the Difference. Explore cultural heritage, adventure routes, pilgrimage tours, and luxury beach holidays across India. Registered with Ministry of Tourism.
             </p>
             <div className="text-xs border border-primary/30 p-2.5 rounded-lg bg-primary/10">
               <span className="flex items-center space-x-1.5 font-bold text-white mb-1">
@@ -32,8 +32,10 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
               <li><Link href="/tours" className="hover:text-white transition-colors">Explore Packages</Link></li>
-              <li><Link href="/gallery" className="hover:text-white transition-colors">Masonry Gallery</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Travel Blog & Tips</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact & Enquiries</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-booking" className="hover:text-white transition-colors">Terms of Booking</Link></li>
             </ul>
           </div>
 
@@ -74,12 +76,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-primary/20 text-center text-xs text-red-250 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div className="mt-8 pt-8 border-t border-primary/20 text-center text-xs text-red-200 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <p>© {new Date().getFullYear()} Shreeya Tours. All rights reserved.</p>
           <div className="flex space-x-6">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Booking</a>
-            <a href="#" className="hover:text-white">GST Invoicing Terms</a>
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms-of-booking" className="hover:text-white transition-colors">Terms of Booking</Link>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 
@@ -72,7 +72,7 @@ export default function AboutUs() {
             Experience the Difference
           </h1>
           <p className="mt-4 text-base sm:text-lg text-red-100 max-w-2xl mx-auto leading-relaxed">
-            We craft personalized domestic tour packages with absolute transparency, verified hotel stays, professional driver-guides, and 24/7 active helpline support.
+            We craft personalized domestic tour packages with absolute transparency, verified hotel stays, and 24/7 active helpline support.
           </p>
         </div>
       </section>
@@ -247,8 +247,8 @@ export default function AboutUs() {
 
           {/* Quick Helplines */}
           <div className="border-t border-gray-150 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-gray-500 gap-4 text-center">
-            <p>📞 Emergency Active Tour Helpline: <span className="text-primary font-black">+91 63538 18605</span></p>
-            <p>🏢 Registered Office: A-102, Krishna Empire, Chhani, Vadodara - 391740</p>
+            <p>ðŸ“ž Emergency Active Tour Helpline: <span className="text-primary font-black">+91 63538 18605</span></p>
+            <p>ðŸ¢ Registered Office: A-102, Krishna Empire, Chhani, Vadodara - 391740</p>
           </div>
         </section>
 
@@ -256,4 +256,5 @@ export default function AboutUs() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -64,16 +64,26 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
 
-      {/* Detail Header Banner */}
-      <div className="text-white py-12 px-4 bg-[#90000A]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/tours" className="text-white hover:text-red-200 font-semibold text-xs flex items-center space-x-1.5 mb-4 transition-colors">
+      {/* Detail Header Banner with Authentic Destination Image Backdrop & Red Gradient */}
+      <div className="relative text-white py-16 px-4 overflow-hidden bg-[#590006]">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={tour.featuredImage}
+            alt={tour.name}
+            className="w-full h-full object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/95 via-[#92000A]/85 to-[#730008]/88"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link href="/tours" className="text-white/80 hover:text-white font-semibold text-xs flex items-center space-x-1.5 mb-4 transition-colors">
             <span>←</span> <span>Back to Catalog</span>
           </Link>
           <div className="flex flex-wrap items-center space-x-2 text-xs text-red-200 font-bold uppercase tracking-wider mb-2">
-            <span className="text-white bg-white/20 px-2 py-0.5 rounded text-[10px]">{tour.tourType} tour</span>
+            <span className="text-white bg-white/20 px-2.5 py-0.5 rounded text-[10px] uppercase">{tour.tourType} tour</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight uppercase drop-shadow-md">
             {tour.name}
           </h1>
           <div className="flex items-center space-x-4 mt-3 text-sm text-red-100">
@@ -108,7 +118,7 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                   <button
                     key={index}
                     onClick={() => setSelectedImage(imgUrl)}
-                    className={`h-20 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`h-20 sm:h-24 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
                       selectedImage === imgUrl ? 'border-primary opacity-100 scale-95 shadow-md' : 'border-transparent opacity-75 hover:opacity-100'
                     }`}
                   >
@@ -120,10 +130,9 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
 
             {/* Inclusions */}
             <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Inclusions</h2>
+              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase">Inclusions</h2>
               
               <div className="text-sm">
-                {/* Inclusions Column */}
                 <div className="space-y-3">
                   <h3 className="font-semibold text-green-600 flex items-center space-x-1.5">
                     <span>What&apos;s Included</span>
@@ -131,8 +140,29 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                   <ul className="space-y-2 text-gray-700">
                     {tour.inclusions.map((inc, i) => (
                       <li key={i} className="flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
+                        <span className="text-green-500 mr-2 font-bold">✓</span>
                         <span>{inc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Exclusions */}
+            <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase">Exclusions</h2>
+              
+              <div className="text-sm">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-red-600 flex items-center space-x-1.5">
+                    <span>What&apos;s Excluded</span>
+                  </h3>
+                  <ul className="space-y-2 text-gray-700">
+                    {tour.exclusions.map((exc, i) => (
+                      <li key={i} className="flex items-start">
+                        <span className="text-red-500 mr-2 font-bold">✕</span>
+                        <span>{exc}</span>
                       </li>
                     ))}
                   </ul>
@@ -142,7 +172,7 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
 
             {/* Day-by-Day Accordion Itinerary */}
             <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Day-by-Day Itinerary</h2>
+              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase">Day-by-Day Itinerary</h2>
               
               <div className="space-y-3">
                 {tour.itinerary.map((day) => {
@@ -154,7 +184,7 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                     >
                       <button
                         onClick={() => toggleAccordion(day.dayNumber)}
-                        className={`w-full flex justify-between items-center p-4 text-left font-bold text-gray-950 transition-colors ${
+                        className={`w-full flex justify-between items-center p-4 text-left font-bold text-gray-950 transition-colors cursor-pointer ${
                           isOpen ? 'bg-primary-light text-primary' : 'bg-white hover:bg-gray-50'
                         }`}
                       >
@@ -193,24 +223,10 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
               </div>
             </div>
 
-            {/* Google Places / Reviews integration card */}
-            <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">Google Business Reviews</h2>
-              <div className="flex items-center space-x-4">
-                <div className="bg-primary text-white rounded-xl p-4 text-center font-black shadow-sm border border-primary/10">
-                  <p className="text-2xl">{tour.rating}</p>
-                  <p className="text-[10px] text-red-100">Out of 5</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center text-amber-500">★★★★★</div>
-                  <p className="text-xs text-gray-500">Based on verified Google Maps reviews and places bookings.</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Right Sidebar: Sticky Booking Panel */}
-          <div className="lg:col-span-1 lg:sticky lg:top-20 h-fit">
+          <div className="lg:col-span-1 lg:sticky lg:top-24 h-fit">
             <BookingForm
               packageId={tour.id}
               packageName={tour.name}
@@ -223,4 +239,3 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
     </div>
   );
 }
-

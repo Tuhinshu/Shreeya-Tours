@@ -1,15 +1,50 @@
-'use client';
+﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MOCK_TOURS } from '@/utils/mockData';
 import ReviewsCarousel from '@/components/ReviewsCarousel';
 
-
-
+const HERO_CAROUSEL_IMAGES = [
+  {
+    url: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1920&q=85',
+    title: 'Timeless Wonders of Agra',
+    subtitle: 'Taj Mahal & Mughal Architecture'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1920&q=85',
+    title: 'Munnar & Alleppey Backwaters',
+    subtitle: "God's Own Country in Kerala"
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1920&q=85',
+    title: 'Royal Forts & Palaces',
+    subtitle: 'Heritage & Grandeur of Rajasthan'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=85',
+    title: 'Himalayan High Passes',
+    subtitle: 'Pangong Tso & Leh Ladakh'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1920&q=85',
+    title: 'Monument of Unity & Heritage',
+    subtitle: 'Statue of Unity & Western India'
+  }
+];
 
 export default function HomePage() {
   const [activeRegion, setActiveRegion] = useState<'all' | 'west_india' | 'south_india' | 'himalayas' | 'islands'>('all');
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  const [showAllTours, setShowAllTours] = useState(false);
+
+  // Auto-advance hero carousel background every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % HERO_CAROUSEL_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Filter mock tours
   const filteredTours = MOCK_TOURS.filter((tour) => {
@@ -21,45 +56,50 @@ export default function HomePage() {
     return true;
   });
 
+  // Display top 6 initially, or all if toggled
+  const displayedTours = showAllTours ? filteredTours : filteredTours.slice(0, 6);
+
   return (
     <div className="bg-[#FAF9F6] pb-24 overflow-x-hidden">
       
-      {/* 1. HERO VIDEO/SLIDESHOW BANNER */}
-      <section className="relative h-[85vh] min-h-[500px] w-full overflow-hidden bg-primary text-white">
+      {/* 1. HERO CAROUSEL HEADER BANNER WITH ATTRACTIVE RED GRADIENT OVERLAY */}
+      <section className="relative h-[85vh] min-h-[540px] w-full overflow-hidden bg-[#590006] text-white">
         
-        {/* Background Video Loop */}
-        <video
-          className="absolute inset-0 h-full w-full object-cover opacity-60 scale-102"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=1920&q=80"
-        >
-          <source
-            src="https://assets.mixkit.co/videos/preview/mixkit-beautiful-aerial-shot-of-a-historical-fortress-in-india-40916-large.mp4"
-            type="video/mp4"
-          />
-        </video>
+        {/* Background Image Carousel */}
+        {HERO_CAROUSEL_IMAGES.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              idx === currentHeroSlide ? 'opacity-100 scale-105 transition-transform duration-10000' : 'opacity-0 scale-100 pointer-events-none'
+            }`}
+          >
+            <img
+              src={slide.url}
+              alt={slide.title}
+              className="h-full w-full object-cover object-center"
+            />
+          </div>
+        ))}
 
-        {/* Soft overlay gradient representing the brand red & gold */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/60 via-transparent to-secondary z-10"></div>
+        {/* Attractive Deep Red Gradient Overlay (Rich Brand Crimson & Amber Warmth) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/92 via-[#92000A]/80 to-[#730008]/88 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 z-10"></div>
 
         {/* Hero Content */}
         <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center z-20">
           <div className="max-w-3xl space-y-6 flex flex-col items-center">
             
             {/* Tagline */}
-            <div className="inline-flex items-center space-x-2 bg-secondary/20 border border-secondary/40 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-black text-secondary tracking-widest uppercase">
+            <div className="inline-flex items-center space-x-2 bg-secondary/20 border border-secondary/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black text-secondary tracking-widest uppercase shadow-sm">
               <span>TRUSTED INDIAN TRAVEL PARTNER</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-white uppercase drop-shadow-md">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none text-white uppercase drop-shadow-lg">
               Uncover the <br className="sm:hidden" />
               <span className="text-secondary font-black bg-clip-text">Magic of India</span>
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg text-gray-250 font-medium max-w-xl mx-auto leading-relaxed drop-shadow-sm">
+            <p className="text-sm sm:text-base md:text-lg text-red-50 font-medium max-w-xl mx-auto leading-relaxed drop-shadow">
               Experience ancient temples, wild safari reserves, sun-kissed beaches, and timeless architectural marvels. Enjoy hand-crafted tour packages, verified luxury stays, transparent pricing, and 24/7 on-ground support across India.
             </p>
 
@@ -67,7 +107,7 @@ export default function HomePage() {
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
               <Link
                 href="/tours"
-                className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-white text-xs font-black tracking-wider uppercase px-8 py-4.5 rounded-xl transition duration-300 shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-white text-xs font-black tracking-wider uppercase px-8 py-4.5 rounded-xl transition duration-300 shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer border border-white/20"
               >
                 <span>Find Your Destination</span>
                 <span>➔</span>
@@ -76,10 +116,26 @@ export default function HomePage() {
                 href="https://wa.me/916353818605?text=Hi!%20I%20want%20to%20enquire%20about%20tour%20packages%20in%20India."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto bg-secondary hover:bg-secondary-hover text-primary text-xs font-black tracking-wider uppercase px-8 py-4.5 rounded-xl transition duration-300 shadow-xl hover:shadow-secondary/20 hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full sm:w-auto bg-secondary hover:bg-secondary-hover text-primary text-xs font-black tracking-wider uppercase px-8 py-4.5 rounded-xl transition duration-300 shadow-xl hover:shadow-secondary/30 hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <span>Speak to a Travel Expert</span>
               </a>
+            </div>
+
+            {/* Carousel Slide Indicators */}
+            <div className="pt-6 flex items-center space-x-2.5 z-30">
+              {HERO_CAROUSEL_IMAGES.map((_, dotIdx) => (
+                <button
+                  key={dotIdx}
+                  onClick={() => setCurrentHeroSlide(dotIdx)}
+                  aria-label={`Go to slide ${dotIdx + 1}`}
+                  className={`transition-all duration-300 rounded-full cursor-pointer ${
+                    dotIdx === currentHeroSlide
+                      ? 'w-8 h-2.5 bg-secondary shadow-md'
+                      : 'w-2.5 h-2.5 bg-white/50 hover:bg-white/80'
+                  }`}
+                />
+              ))}
             </div>
 
           </div>
@@ -114,9 +170,7 @@ export default function HomePage() {
         </div>
       </section>
 
-
-
-      {/* 5. FEATURED PACKAGES (Filterable) */}
+      {/* 3. FEATURED PACKAGES (Filterable) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
         
         {/* Section Title */}
@@ -138,7 +192,10 @@ export default function HomePage() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveRegion(tab.id as 'all' | 'west_india' | 'south_india' | 'himalayas' | 'islands')}
+                onClick={() => {
+                  setActiveRegion(tab.id as 'all' | 'west_india' | 'south_india' | 'himalayas' | 'islands');
+                  setShowAllTours(false);
+                }}
                 className={`px-4.5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition cursor-pointer ${
                   activeRegion === tab.id
                     ? 'bg-primary text-white shadow-md'
@@ -151,9 +208,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Packages Grid */}
+        {/* Packages Grid (Top 6 initially, or expanded) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredTours.map((tour) => (
+          {displayedTours.map((tour) => (
             <div
               key={tour.id}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col group h-full hover-card-pop"
@@ -208,9 +265,30 @@ export default function HomePage() {
           ))}
         </div>
 
+        {/* Show More / Show Less Button */}
+        {filteredTours.length > 6 && (
+          <div className="text-center mt-12">
+            <button
+              onClick={() => setShowAllTours(!showAllTours)}
+              className="inline-flex items-center space-x-2 bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-widest px-8 py-4 rounded-xl transition duration-300 shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5 cursor-pointer"
+            >
+              <span>{showAllTours ? 'Show Less' : `Show More (${filteredTours.length - 6} More Tours)`}</span>
+              <svg
+                className={`w-4 h-4 transition-transform duration-300 ${showAllTours ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        )}
+
       </section>
 
-      {/* 6. GOOGLE REVIEWS & TESTIMONIALS */}
+      {/* 4. REVIEWS & TESTIMONIALS */}
       <section className="bg-secondary-light py-20 mt-28 border-y border-secondary/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -229,4 +307,3 @@ export default function HomePage() {
     </div>
   );
 }
-

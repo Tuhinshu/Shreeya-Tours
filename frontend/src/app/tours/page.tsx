@@ -1,8 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-
 import { MOCK_TOURS } from '@/utils/mockData';
 
 export default function TourCatalog() {
@@ -23,11 +22,10 @@ export default function TourCatalog() {
 
   const regionLabel = (region: string) => {
     switch (region) {
-      case 'north_india': return 'North India';
-      case 'south_india': return 'South India';
-      case 'east_india': return 'East India';
       case 'west_india': return 'West India';
-      case 'international': return 'International';
+      case 'south_india': return 'South India';
+      case 'north_india': return 'North India';
+      case 'east_india': return 'East India & Islands';
       default: return region;
     }
   };
@@ -45,13 +43,26 @@ export default function TourCatalog() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
-      {/* Catalog Hero Banner */}
-      <div className="relative text-white py-16 px-4 text-center overflow-hidden bg-[#90000A]">
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+      {/* Catalog Hero Banner with Authentic Travel Backdrop and Red Gradient Overlay */}
+      <div className="relative text-white py-20 px-4 text-center overflow-hidden bg-[#590006]">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1477584322904-487a38530416?auto=format&fit=crop&w=1920&q=85"
+            alt="Incredible India Tour Packages"
+            className="w-full h-full object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/92 via-[#92000A]/85 to-[#730008]/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3">
+          <span className="inline-block bg-secondary/20 border border-secondary/40 text-secondary text-xs font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-sm">
+            Handpicked Itineraries
+          </span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase drop-shadow-md">
             Indian Tour Packages Catalog
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-red-100 max-w-2xl mx-auto">
+          <p className="mt-3 text-base sm:text-lg text-red-100 max-w-2xl mx-auto leading-relaxed drop-shadow">
             Browse our curated hand-crafted tour packages. All bookings include direct WhatsApp support and GST-compliant invoicing.
           </p>
         </div>
@@ -83,18 +94,18 @@ export default function TourCatalog() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Region Filter */}
+            {/* Region Filter - Removed International */}
             <div>
               <span className="block text-sm font-semibold text-gray-700 mb-2.5">Filter by Region</span>
               <div className="flex flex-wrap gap-2">
-                {['all', 'north_india', 'south_india', 'west_india', 'international'].map((reg) => (
+                {['all', 'west_india', 'south_india', 'north_india', 'east_india'].map((reg) => (
                   <button
                     key={reg}
                     onClick={() => setSelectedRegion(reg)}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                       selectedRegion === reg
-                        ? 'bg-primary text-white border-primary shadow-sm'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
                     {reg === 'all' ? 'All Regions' : regionLabel(reg)}
@@ -103,21 +114,21 @@ export default function TourCatalog() {
               </div>
             </div>
 
-            {/* Type Filter */}
+            {/* Tour Type Filter */}
             <div>
-              <span className="block text-sm font-semibold text-gray-700 mb-2.5">Filter by Tour Type</span>
+              <span className="block text-sm font-semibold text-gray-700 mb-2.5">Tour Category</span>
               <div className="flex flex-wrap gap-2">
-                {['all', 'heritage', 'adventure', 'leisure', 'luxury', 'pilgrimage'].map((t) => (
+                {['all', 'heritage', 'adventure', 'leisure', 'pilgrimage'].map((type) => (
                   <button
-                    key={t}
-                    onClick={() => setSelectedType(t)}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                      selectedType === t
-                        ? 'bg-primary text-white border-primary shadow-sm'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    key={type}
+                    onClick={() => setSelectedType(type)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      selectedType === type
+                        ? 'bg-secondary text-primary shadow-sm font-extrabold'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
-                    {t === 'all' ? 'All Types' : typeLabel(t)}
+                    {type === 'all' ? 'All Categories' : typeLabel(type)}
                   </button>
                 ))}
               </div>
@@ -127,20 +138,39 @@ export default function TourCatalog() {
 
         {/* Results Info */}
         <div className="flex justify-between items-center mb-6">
-          <p className="text-sm font-medium text-gray-500">
-            Showing {filteredTours.length} {filteredTours.length === 1 ? 'package' : 'packages'}
+          <p className="text-sm font-bold text-gray-500">
+            Showing <span className="text-gray-900 font-extrabold">{filteredTours.length}</span> Tour Packages
           </p>
+          {(selectedRegion !== 'all' || selectedType !== 'all' || searchQuery) && (
+            <button
+              onClick={() => {
+                setSelectedRegion('all');
+                setSelectedType('all');
+                setSearchQuery('');
+              }}
+              className="text-xs font-bold text-primary hover:underline cursor-pointer"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
 
-        {/* Tour Packages Grid */}
-        {filteredTours.length > 0 ? (
+        {/* Packages Grid */}
+        {filteredTours.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 text-center border border-gray-150 shadow-sm max-w-lg mx-auto">
+            <p className="text-lg font-bold text-gray-800">No packages found</p>
+            <p className="text-xs text-gray-500 mt-2">
+              We couldn&apos;t find any tour packages matching your search criteria. Try modifying your filter options.
+            </p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTours.map((tour) => (
               <div
                 key={tour.id}
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col group h-full hover-card-pop"
+                className="bg-white rounded-2xl shadow border border-gray-150 overflow-hidden flex flex-col group hover:shadow-lg transition-all"
               >
-                {/* Image Section */}
+                {/* Image Container */}
                 <div className="h-56 w-full relative overflow-hidden bg-gray-100">
                   <img
                     src={tour.featuredImage}
@@ -148,38 +178,44 @@ export default function TourCatalog() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold shadow">
+                  <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                     {tour.durationDays} Days
                   </div>
-                  <div className="absolute bottom-4 left-4 bg-white text-primary px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider shadow border border-primary/20">
-                    ★ {tour.rating} ({tour.reviewsCount})
+                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    {tour.tourType}
                   </div>
                 </div>
 
-                {/* Content Section */}
+                {/* Contents */}
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-primary transition-colors">
+                  <div className="flex justify-between items-center text-xs text-gray-400 font-bold uppercase mb-2">
+                    <span>{regionLabel(tour.region)}</span>
+                    <span className="flex items-center text-yellow-500 font-bold">
+                      ★ <span className="ml-1 text-gray-700">{tour.rating}</span>
+                      <span className="text-gray-400 font-normal ml-0.5">({tour.reviewsCount})</span>
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-gray-900 leading-snug group-hover:text-primary transition-colors">
                     {tour.name}
                   </h3>
 
-                  {/* Highlights Bullet List */}
-                  <ul className="mt-3.5 space-y-1.5 text-xs text-gray-600 list-disc list-inside flex-grow">
-                    {tour.inclusions.slice(0, 3).map((inc, index) => (
-                      <li key={index} className="truncate">{inc}</li>
+                  <ul className="mt-4 space-y-1.5 text-xs text-gray-500 list-disc list-inside flex-grow">
+                    {tour.inclusions.slice(0, 3).map((inc, i) => (
+                      <li key={i} className="truncate font-medium">{inc}</li>
                     ))}
                   </ul>
 
-                  {/* Price and CTA */}
-                  <div className="mt-6 pt-5 border-t border-gray-100 flex items-end justify-between">
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-end justify-between">
                     <div>
-                      <p className="text-[10px] text-gray-400 font-medium">Starting from</p>
-                      <p className="text-2xl font-black text-primary">
+                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Starting from</p>
+                      <p className="text-xl font-extrabold text-primary">
                         ₹{tour.basePrice.toLocaleString('en-IN')}
                       </p>
                     </div>
                     <Link
                       href={`/tours/${tour.slug}`}
-                      className="bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-xl text-xs font-bold transition hover:scale-105 active:scale-95 shadow-md"
+                      className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
                     >
                       View Details
                     </Link>
@@ -188,27 +224,9 @@ export default function TourCatalog() {
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-20 bg-white rounded-2xl border border-gray-200 shadow">
-            <div className="flex justify-center text-gray-300 mb-2">
-              <svg className="w-12 h-12" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900">No packages found</h3>
-            <p className="text-gray-500 mt-1.5 text-sm max-w-sm mx-auto">
-              We couldn&apos;t find any tour packages matching your search filters. Try adjusting your query or resetting your selections.
-            </p>
-            <button
-              onClick={() => { setSearchQuery(''); setSelectedRegion('all'); setSelectedType('all'); }}
-              className="mt-6 px-5 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary-hover transition"
-            >
-              Reset Filters
-            </button>
-          </div>
         )}
+
       </div>
     </div>
   );
 }
-

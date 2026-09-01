@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useEffect } from 'react';
 
@@ -206,13 +206,11 @@ export default function ReviewsCarousel() {
                         i < review.rating ? 'text-yellow-500' : 'text-gray-200'
                       }`}
                     >
-                      ★
+                      â˜…
                     </span>
                   ))}
                 </div>
-                <span className="text-[10px] bg-gray-100 text-gray-500 font-extrabold uppercase px-2 py-0.5 rounded flex items-center space-x-1">
-                  <span>Google Review</span>
-                </span>
+
               </div>
 
               {/* Review Text - Now Black for readability */}
@@ -241,3 +239,4 @@ export default function ReviewsCarousel() {
     </div>
   );
 }
+
