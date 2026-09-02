@@ -13,13 +13,13 @@ const HERO_CAROUSEL_IMAGES = [
   },
   {
     url: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1920&q=85',
-    title: 'Munnar & Alleppey Backwaters',
-    subtitle: "God's Own Country in Kerala"
+    title: 'Munnar Emerald Tea Valleys',
+    subtitle: 'Rolling Mist-Covered Hills of Kerala'
   },
   {
-    url: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1920&q=85',
-    title: 'Lakes & Palaces of Udaipur',
-    subtitle: 'Heritage & Grandeur of Rajasthan'
+    url: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1920&q=85',
+    title: 'Serene Kerala Backwaters',
+    subtitle: 'Traditional Houseboats on Palm-Fringed Canals'
   },
   {
     url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=85',
@@ -313,3 +313,4 @@ export default function HomePage() {
     </div>
   );
 }
+

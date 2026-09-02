@@ -113,9 +113,9 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
           {/* Left / Middle: Details, Accordion, Inclusions */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Visual Photo Gallery (Supports local assets or props cleanly) */}
+            {/* Visual Photo Gallery (5-Photo Responsive Layout) */}
             <div className="bg-white rounded-2xl p-4 shadow border border-gray-100 space-y-3">
-              <div className="h-[300px] sm:h-[400px] rounded-xl overflow-hidden bg-gray-150 relative">
+              <div className="h-[320px] sm:h-[420px] rounded-xl overflow-hidden bg-gray-100 relative group">
                 <img
                   src={selectedImage}
                   alt={tour.name}
@@ -124,19 +124,27 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                     (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
                   }}
                 />
+                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                  Photo {galleryImages.indexOf(selectedImage) !== -1 ? galleryImages.indexOf(selectedImage) + 1 : 1} of {Math.min(galleryImages.length, 5)}
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                {galleryImages.map((imgUrl, index) => (
+
+              {/* 5-Column Responsive Thumbnail Selector */}
+              <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                {galleryImages.slice(0, 5).map((imgUrl, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(imgUrl)}
-                    className={`h-20 sm:h-24 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                      selectedImage === imgUrl ? 'border-primary opacity-100 scale-95 shadow-md' : 'border-transparent opacity-75 hover:opacity-100'
-                    }`}
+                    aria-label={"View photo " + (index + 1)}
+                    className={"h-16 sm:h-20 md:h-24 rounded-xl overflow-hidden border-2 transition-all cursor-pointer " + (
+                      selectedImage === imgUrl
+                        ? "border-primary ring-2 ring-primary/30 opacity-100 scale-95 shadow-md"
+                        : "border-transparent opacity-70 hover:opacity-100 hover:scale-[1.02]"
+                    )}
                   >
                     <img
                       src={imgUrl}
-                      alt={`Gallery ${index + 1}`}
+                      alt={tour.name + " Photo " + (index + 1)}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
@@ -144,27 +152,6 @@ export default function TourDetail({ params }: { params: Promise<{ slug: string 
                     />
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Inclusions */}
-            <div className="bg-white rounded-2xl p-6 shadow border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase">Inclusions</h2>
-              
-              <div className="text-sm">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-green-600 flex items-center space-x-1.5">
-                    <span>What&apos;s Included</span>
-                  </h3>
-                  <ul className="space-y-2 text-gray-700">
-                    {tour.inclusions.map((inc, i) => (
-                      <li key={i} className="flex items-start">
-                        <span className="text-green-500 mr-2 font-bold">✓</span>
-                        <span>{inc}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
 

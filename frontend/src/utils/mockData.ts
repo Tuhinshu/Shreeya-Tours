@@ -35,11 +35,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 11150,
-    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/andaman-pb-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
+      '/tours/andaman-pb-3n-1.jpg',
+      '/tours/andaman-pb-3n-2.jpg',
+      '/tours/andaman-pb-3n-3.jpg',
+      '/tours/andaman-pb-3n-4.jpg',
+      '/tours/andaman-pb-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights accommodation in Port Blair in selected base category rooms',
@@ -93,11 +95,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 14350,
-    featuredImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/andaman-pb-h-n-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+      '/tours/andaman-pb-h-n-4n-1.jpg',
+      '/tours/andaman-pb-h-n-4n-2.jpg',
+      '/tours/andaman-pb-h-n-4n-3.jpg',
+      '/tours/andaman-pb-h-n-4n-4.jpg',
+      '/tours/andaman-pb-h-n-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights accommodation (2N Port Blair, 1N Swaraj Dweep / Havelock, 1N Shaheed Dweep / Neil)',
@@ -158,11 +162,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16520,
-    featuredImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/andaman-pb-h-n-5n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+      '/tours/andaman-pb-h-n-5n-1.jpg',
+      '/tours/andaman-pb-h-n-5n-2.jpg',
+      '/tours/andaman-pb-h-n-5n-3.jpg',
+      '/tours/andaman-pb-h-n-5n-4.jpg',
+      '/tours/andaman-pb-h-n-5n-5.jpg'
     ],
     inclusions: [
       '5 Nights accommodation (3N Port Blair, 1N Swaraj Dweep / Havelock, 1N Shaheed Dweep / Neil)',
@@ -234,11 +240,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 9999,
-    featuredImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/goa-3n4d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+      '/tours/goa-3n4d-1.jpg',
+      '/tours/goa-3n4d-2.jpg',
+      '/tours/goa-3n4d-3.jpg',
+      '/tours/goa-3n4d-4.jpg',
+      '/tours/goa-3n4d-5.jpg'
     ],
     inclusions: [
       '3 Nights accommodation in a 3-Star beach-side resort',
@@ -297,11 +305,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 2,
     basePrice: 4999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-sou-poicha-1n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-sou-poicha-1n-1.jpg',
+      '/tours/gujarat-sou-poicha-1n-2.jpg',
+      '/tours/gujarat-sou-poicha-1n-3.jpg',
+      '/tours/gujarat-sou-poicha-1n-4.jpg',
+      '/tours/gujarat-sou-poicha-1n-5.jpg'
     ],
     inclusions: [
       '1 Night accommodation in Vadodara/Kevadia in comfortable 3* hotel',
@@ -340,11 +350,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 2,
     basePrice: 5499,
-    featuredImage: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-kutch-ranotsav-1n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1599930113854-d6d7fd521f10?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-kutch-ranotsav-1n-1.jpg',
+      '/tours/gujarat-kutch-ranotsav-1n-2.jpg',
+      '/tours/gujarat-kutch-ranotsav-1n-3.jpg',
+      '/tours/gujarat-kutch-ranotsav-1n-4.jpg',
+      '/tours/gujarat-kutch-ranotsav-1n-5.jpg'
     ],
     inclusions: [
       '1 Night accommodation in premium Tent/Bhunga at Rann of Kutch',
@@ -383,11 +395,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 3,
     basePrice: 7999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-sou-vadodara-2n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-sou-vadodara-2n-1.jpg',
+      '/tours/gujarat-sou-vadodara-2n-2.jpg',
+      '/tours/gujarat-sou-vadodara-2n-3.jpg',
+      '/tours/gujarat-sou-vadodara-2n-4.jpg',
+      '/tours/gujarat-sou-vadodara-2n-5.jpg'
     ],
     inclusions: [
       '2 Nights accommodation in a premium 3* hotel in Vadodara',
@@ -432,11 +446,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 3,
     basePrice: 8999,
-    featuredImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-dwarka-somnath-2n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-dwarka-somnath-2n-1.jpg',
+      '/tours/gujarat-dwarka-somnath-2n-2.jpg',
+      '/tours/gujarat-dwarka-somnath-2n-3.jpg',
+      '/tours/gujarat-dwarka-somnath-2n-4.jpg',
+      '/tours/gujarat-dwarka-somnath-2n-5.jpg'
     ],
     inclusions: [
       '1 Night accommodation in Dwarka, 1 Night in Somnath (Comfortable 3* hotels)',
@@ -482,11 +498,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 4,
     basePrice: 12999,
-    featuredImage: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-dwarka-somnath-gir-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-dwarka-somnath-gir-3n-1.jpg',
+      '/tours/gujarat-dwarka-somnath-gir-3n-2.jpg',
+      '/tours/gujarat-dwarka-somnath-gir-3n-3.jpg',
+      '/tours/gujarat-dwarka-somnath-gir-3n-4.jpg',
+      '/tours/gujarat-dwarka-somnath-gir-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights stay (1N Dwarka, 1N Somnath, 1N Sasan Gir Wildlife Resort)',
@@ -539,11 +557,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 5,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-sou-ahmedabad-patan-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-sou-ahmedabad-patan-4n-1.jpg',
+      '/tours/gujarat-sou-ahmedabad-patan-4n-2.jpg',
+      '/tours/gujarat-sou-ahmedabad-patan-4n-3.jpg',
+      '/tours/gujarat-sou-ahmedabad-patan-4n-4.jpg',
+      '/tours/gujarat-sou-ahmedabad-patan-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (2N Vadodara, 2N Ahmedabad in 3-Star hotels)',
@@ -604,11 +624,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-royal-heritage-6n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-royal-heritage-6n-1.jpg',
+      '/tours/gujarat-royal-heritage-6n-2.jpg',
+      '/tours/gujarat-royal-heritage-6n-3.jpg',
+      '/tours/gujarat-royal-heritage-6n-4.jpg',
+      '/tours/gujarat-royal-heritage-6n-5.jpg'
     ],
     inclusions: [
       '6 Nights accommodation in premium 3* and heritage stays (2N Vadodara, 1N Ahmedabad, 2N Dwarka, 1N Somnath)',
@@ -684,11 +706,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 9,
     basePrice: 28999,
-    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/gujarat-grand-royal-odyssey-8n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1200&q=80'
+      '/tours/gujarat-grand-royal-odyssey-8n-1.jpg',
+      '/tours/gujarat-grand-royal-odyssey-8n-2.jpg',
+      '/tours/gujarat-grand-royal-odyssey-8n-3.jpg',
+      '/tours/gujarat-grand-royal-odyssey-8n-4.jpg',
+      '/tours/gujarat-grand-royal-odyssey-8n-5.jpg'
     ],
     inclusions: [
       '8 Nights stay in premium 3*/4* hotels (2N Vadodara, 1N Ahmedabad, 2N Dwarka, 1N Somnath, 1N Diu, 1N Sasan Gir)',
@@ -728,11 +752,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 15499,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-coorg-mysore-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-coorg-mysore-4n-1.jpg',
+      '/tours/karnataka-coorg-mysore-4n-2.jpg',
+      '/tours/karnataka-coorg-mysore-4n-3.jpg',
+      '/tours/karnataka-coorg-mysore-4n-4.jpg',
+      '/tours/karnataka-coorg-mysore-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights accommodation in 3* hotels & hill resorts (1N Mysore, 2N Coorg, 1N Bangalore)',
@@ -792,11 +818,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 4,
     basePrice: 13999,
-    featuredImage: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-mysore-kabini-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-mysore-kabini-3n-1.jpg',
+      '/tours/karnataka-mysore-kabini-3n-2.jpg',
+      '/tours/karnataka-mysore-kabini-3n-3.jpg',
+      '/tours/karnataka-mysore-kabini-3n-4.jpg',
+      '/tours/karnataka-mysore-kabini-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights stay (1N Mysore in comfortable 3* hotel, 2N Kabini jungle resort)',
@@ -847,11 +875,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 12999,
-    featuredImage: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-chikmagalur-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-chikmagalur-3n-1.jpg',
+      '/tours/karnataka-chikmagalur-3n-2.jpg',
+      '/tours/karnataka-chikmagalur-3n-3.jpg',
+      '/tours/karnataka-chikmagalur-3n-4.jpg',
+      '/tours/karnataka-chikmagalur-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights stay (1N Hassan, 2N Chikmagalur coffee resort)',
@@ -902,11 +932,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 4,
     basePrice: 13499,
-    featuredImage: 'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-mysore-bandipur-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-mysore-bandipur-3n-1.jpg',
+      '/tours/karnataka-mysore-bandipur-3n-2.jpg',
+      '/tours/karnataka-mysore-bandipur-3n-3.jpg',
+      '/tours/karnataka-mysore-bandipur-3n-4.jpg',
+      '/tours/karnataka-mysore-bandipur-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights stay (1N Mysore, 2N Bandipur Wildlife Lodge)',
@@ -934,11 +966,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-hampi-badami-3n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-hampi-badami-3n-1.jpg',
+      '/tours/karnataka-hampi-badami-3n-2.jpg',
+      '/tours/karnataka-hampi-badami-3n-3.jpg',
+      '/tours/karnataka-hampi-badami-3n-4.jpg',
+      '/tours/karnataka-hampi-badami-3n-5.jpg'
     ],
     inclusions: [
       '3 Nights accommodation (2N Hospet/Hampi, 1N Badami in 3* hotels)',
@@ -989,11 +1023,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-hampi-dandeli-5d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-hampi-dandeli-5d-1.jpg',
+      '/tours/karnataka-hampi-dandeli-5d-2.jpg',
+      '/tours/karnataka-hampi-dandeli-5d-3.jpg',
+      '/tours/karnataka-hampi-dandeli-5d-4.jpg',
+      '/tours/karnataka-hampi-dandeli-5d-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (2N Hospet, 1N Badami, 1N Dandeli river resort)',
@@ -1022,11 +1058,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-coastal-gokarna-5n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-coastal-gokarna-5n-1.jpg',
+      '/tours/karnataka-coastal-gokarna-5n-2.jpg',
+      '/tours/karnataka-coastal-gokarna-5n-3.jpg',
+      '/tours/karnataka-coastal-gokarna-5n-4.jpg',
+      '/tours/karnataka-coastal-gokarna-5n-5.jpg'
     ],
     inclusions: [
       '5 Nights stay (1N Mangalore, 1N Udupi, 1N Murudeshwara, 2N Gokarna in 3* properties)',
@@ -1056,11 +1094,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 10,
     basePrice: 29999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/karnataka-coast-wilderness-9n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=1200&q=80'
+      '/tours/karnataka-coast-wilderness-9n-1.jpg',
+      '/tours/karnataka-coast-wilderness-9n-2.jpg',
+      '/tours/karnataka-coast-wilderness-9n-3.jpg',
+      '/tours/karnataka-coast-wilderness-9n-4.jpg',
+      '/tours/karnataka-coast-wilderness-9n-5.jpg'
     ],
     inclusions: [
       '9 Nights stay (2N Hospet/Hampi, 1N Badami, 1N Dandeli, 1N Karwar, 1N Murudeshwara, 1N Udupi, 2N Mangalore)',
@@ -1098,11 +1138,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-hills-lake-escape-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-hills-lake-escape-4n-1.jpg',
+      '/tours/kerala-hills-lake-escape-4n-2.jpg',
+      '/tours/kerala-hills-lake-escape-4n-3.jpg',
+      '/tours/kerala-hills-lake-escape-4n-4.jpg',
+      '/tours/kerala-hills-lake-escape-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (2N Munnar, 1N Kumarakom, 1N Cochin in comfortable 3* hotels)',
@@ -1160,11 +1202,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-tea-hills-forest-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-tea-hills-forest-4n-1.jpg',
+      '/tours/kerala-tea-hills-forest-4n-2.jpg',
+      '/tours/kerala-tea-hills-forest-4n-3.jpg',
+      '/tours/kerala-tea-hills-forest-4n-4.jpg',
+      '/tours/kerala-tea-hills-forest-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (2N Munnar, 1N Thekkady, 1N Kumarakom/Cochin)',
@@ -1193,11 +1237,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-houseboat-beach-4n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-houseboat-beach-4n-1.jpg',
+      '/tours/kerala-houseboat-beach-4n-2.jpg',
+      '/tours/kerala-houseboat-beach-4n-3.jpg',
+      '/tours/kerala-houseboat-beach-4n-4.jpg',
+      '/tours/kerala-houseboat-beach-4n-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (1N Kumarakom, 1N Private Premium Houseboat in Alleppey, 2N Kovalam beach resort)',
@@ -1227,11 +1273,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-houseboat-hills-6n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-houseboat-hills-6n-1.jpg',
+      '/tours/kerala-houseboat-hills-6n-2.jpg',
+      '/tours/kerala-houseboat-hills-6n-3.jpg',
+      '/tours/kerala-houseboat-hills-6n-4.jpg',
+      '/tours/kerala-houseboat-hills-6n-5.jpg'
     ],
     inclusions: [
       '6 Nights stay (1N Cochin, 2N Munnar, 1N Thekkady, 1N Private Houseboat in Alleppey, 1N Cochin)',
@@ -1264,11 +1312,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 8,
     basePrice: 26999,
-    featuredImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-complete-hills-beach-7n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-complete-hills-beach-7n-1.jpg',
+      '/tours/kerala-complete-hills-beach-7n-2.jpg',
+      '/tours/kerala-complete-hills-beach-7n-3.jpg',
+      '/tours/kerala-complete-hills-beach-7n-4.jpg',
+      '/tours/kerala-complete-hills-beach-7n-5.jpg'
     ],
     inclusions: [
       '7 Nights stay (1N Cochin, 2N Munnar, 1N Thekkady, 1N Private Houseboat in Alleppey, 2N Kovalam)',
@@ -1349,11 +1399,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 9,
     basePrice: 28999,
-    featuredImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/kerala-grand-backwater-8n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
+      '/tours/kerala-grand-backwater-8n-1.jpg',
+      '/tours/kerala-grand-backwater-8n-2.jpg',
+      '/tours/kerala-grand-backwater-8n-3.jpg',
+      '/tours/kerala-grand-backwater-8n-4.jpg',
+      '/tours/kerala-grand-backwater-8n-5.jpg'
     ],
     inclusions: [
       '8 Nights accommodation (1N Cochin, 2N Munnar, 1N Thekkady, 1N Kumarakom, 1N Alleppey Houseboat, 2N Kovalam)',
@@ -1390,11 +1442,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 5,
     basePrice: 14999,
-    featuredImage: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/rajasthan-jodhpur-jaisalmer-5d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80'
+      '/tours/rajasthan-jodhpur-jaisalmer-5d-1.jpg',
+      '/tours/rajasthan-jodhpur-jaisalmer-5d-2.jpg',
+      '/tours/rajasthan-jodhpur-jaisalmer-5d-3.jpg',
+      '/tours/rajasthan-jodhpur-jaisalmer-5d-4.jpg',
+      '/tours/rajasthan-jodhpur-jaisalmer-5d-5.jpg'
     ],
     inclusions: [
       '4 Nights stay (2N Jodhpur heritage hotel, 1N Jaisalmer hotel, 1N Sam Sand Dunes Desert Camp)',
@@ -1453,11 +1507,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 6,
     basePrice: 18999,
-    featuredImage: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/rajasthan-jaipur-pushkar-udaipur-5n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
+      '/tours/rajasthan-jaipur-pushkar-udaipur-5n-1.jpg',
+      '/tours/rajasthan-jaipur-pushkar-udaipur-5n-2.jpg',
+      '/tours/rajasthan-jaipur-pushkar-udaipur-5n-3.jpg',
+      '/tours/rajasthan-jaipur-pushkar-udaipur-5n-4.jpg',
+      '/tours/rajasthan-jaipur-pushkar-udaipur-5n-5.jpg'
     ],
     inclusions: [
       '5 Nights stay (2N Jaipur, 1N Ajmer/Pushkar, 2N Udaipur lake-view stays)',
@@ -1487,11 +1543,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 7,
     basePrice: 22999,
-    featuredImage: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80'
+      '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-1.jpg',
+      '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-2.jpg',
+      '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-3.jpg',
+      '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-4.jpg',
+      '/tours/rajasthan-jaipur-jodhpur-udaipur-6n-5.jpg'
     ],
     inclusions: [
       '6 Nights stay (2N Jaipur, 2N Jodhpur, 2N Udaipur in Heritage / 3-Star hotels)',
@@ -1570,11 +1628,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/tamilnadu-madurai-rameswaram-4d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80'
+      '/tours/tamilnadu-madurai-rameswaram-4d-1.jpg',
+      '/tours/tamilnadu-madurai-rameswaram-4d-2.jpg',
+      '/tours/tamilnadu-madurai-rameswaram-4d-3.jpg',
+      '/tours/tamilnadu-madurai-rameswaram-4d-4.jpg',
+      '/tours/tamilnadu-madurai-rameswaram-4d-5.jpg'
     ],
     inclusions: [
       '3 Nights stay (2N Rameswaram, 1N Madurai in comfortable 3* hotels)',
@@ -1626,11 +1686,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 6,
     basePrice: 16999,
-    featuredImage: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/tamilnadu-heritage-temples-6d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80'
+      '/tours/tamilnadu-heritage-temples-6d-1.jpg',
+      '/tours/tamilnadu-heritage-temples-6d-2.jpg',
+      '/tours/tamilnadu-heritage-temples-6d-3.jpg',
+      '/tours/tamilnadu-heritage-temples-6d-4.jpg',
+      '/tours/tamilnadu-heritage-temples-6d-5.jpg'
     ],
     inclusions: [
       '5 Nights stay (1N Chennai, 1N Mahabalipuram, 1N Kumbakonam, 1N Tanjore, 1N Madurai)',
@@ -1660,11 +1722,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 15999,
-    featuredImage: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/tamilnadu-ooty-kodaikanal-6d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80'
+      '/tours/tamilnadu-ooty-kodaikanal-6d-1.jpg',
+      '/tours/tamilnadu-ooty-kodaikanal-6d-2.jpg',
+      '/tours/tamilnadu-ooty-kodaikanal-6d-3.jpg',
+      '/tours/tamilnadu-ooty-kodaikanal-6d-4.jpg',
+      '/tours/tamilnadu-ooty-kodaikanal-6d-5.jpg'
     ],
     inclusions: [
       '5 Nights stay (3N Ooty hill resort, 2N Kodaikanal resort)',
@@ -1698,11 +1762,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'adventure',
     durationDays: 6,
     basePrice: 24999,
-    featuredImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/himalayas-ladakh-6d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1596701062351-8c2c14d1fdd0?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1616422285623-13ff0162193c?auto=format&fit=crop&w=1200&q=80'
+      '/tours/himalayas-ladakh-6d-1.jpg',
+      '/tours/himalayas-ladakh-6d-2.jpg',
+      '/tours/himalayas-ladakh-6d-3.jpg',
+      '/tours/himalayas-ladakh-6d-4.jpg',
+      '/tours/himalayas-ladakh-6d-5.jpg'
     ],
     inclusions: [
       '5 Nights accommodation in selected stays (3N Leh, 1N Nubra Valley, 1N Pangong Lake)',
@@ -1732,11 +1798,13 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 18999,
-    featuredImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
+    featuredImage: '/tours/himalayas-shimla-manali-6d-1.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80'
+      '/tours/himalayas-shimla-manali-6d-1.jpg',
+      '/tours/himalayas-shimla-manali-6d-2.jpg',
+      '/tours/himalayas-shimla-manali-6d-3.jpg',
+      '/tours/himalayas-shimla-manali-6d-4.jpg',
+      '/tours/himalayas-shimla-manali-6d-5.jpg'
     ],
     inclusions: [
       '5 Nights accommodation (2N Shimla, 3N Manali in comfortable 3* hotels)',
@@ -1759,3 +1827,31 @@ export const MOCK_TOURS: TourPackage[] = [
     reviewsCount: 95
   }
 ];
+
+/**
+ * Duplicate Prevention Guard:
+ * Validates that no single image asset is reused across different tour packages.
+ * Guarantees that each tour package maintains its own distinct set of authentic photos.
+ */
+export function validateTourImageUniqueness(tours: TourPackage[] = MOCK_TOURS): boolean {
+  const seenUrls = new Map<string, string>();
+  let hasDuplicate = false;
+
+  for (const tour of tours) {
+    const packageImages = new Set([tour.featuredImage, ...(tour.gallery || [])]);
+    for (const imgUrl of packageImages) {
+      if (seenUrls.has(imgUrl) && seenUrls.get(imgUrl) !== tour.id) {
+        console.warn(`[Duplicate Prevention Alert] Image ${imgUrl} is shared between ${seenUrls.get(imgUrl)} and ${tour.id}`);
+        hasDuplicate = true;
+      } else {
+        seenUrls.set(imgUrl, tour.id);
+      }
+    }
+  }
+
+  if (!hasDuplicate) {
+    // All tours have 100% unique, non-overlapping photo sets
+    return true;
+  }
+  return false;
+}
