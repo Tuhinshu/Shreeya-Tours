@@ -35,7 +35,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 11150,
-    featuredImage: '/tours/andaman-pb-3n-1.jpg',
+    featuredImage: '/tours/andaman-pb-3n-3.jpg',
     gallery: [
       '/tours/andaman-pb-3n-1.jpg',
       '/tours/andaman-pb-3n-2.jpg',
@@ -95,7 +95,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 5,
     basePrice: 14350,
-    featuredImage: '/tours/andaman-pb-h-n-4n-1.jpg',
+    featuredImage: '/tours/andaman-pb-h-n-4n-4.jpg',
     gallery: [
       '/tours/andaman-pb-h-n-4n-1.jpg',
       '/tours/andaman-pb-h-n-4n-2.jpg',
@@ -240,7 +240,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 9999,
-    featuredImage: '/tours/goa-3n4d-1.jpg',
+    featuredImage: '/tours/goa-3n4d-2.jpg',
     gallery: [
       '/tours/goa-3n4d-1.jpg',
       '/tours/goa-3n4d-2.jpg',
@@ -395,7 +395,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'heritage',
     durationDays: 3,
     basePrice: 7999,
-    featuredImage: '/tours/gujarat-sou-vadodara-2n-1.jpg',
+    featuredImage: '/tours/gujarat-sou-vadodara-2n-5.jpg',
     gallery: [
       '/tours/gujarat-sou-vadodara-2n-1.jpg',
       '/tours/gujarat-sou-vadodara-2n-2.jpg',
@@ -875,7 +875,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 4,
     basePrice: 12999,
-    featuredImage: '/tours/karnataka-chikmagalur-3n-1.jpg',
+    featuredImage: '/tours/karnataka-chikmagalur-3n-4.jpg',
     gallery: [
       '/tours/karnataka-chikmagalur-3n-1.jpg',
       '/tours/karnataka-chikmagalur-3n-2.jpg',
@@ -1058,7 +1058,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'leisure',
     durationDays: 6,
     basePrice: 16999,
-    featuredImage: '/tours/karnataka-coastal-gokarna-5n-1.jpg',
+    featuredImage: '/tours/karnataka-coastal-gokarna-5n-4.jpg',
     gallery: [
       '/tours/karnataka-coastal-gokarna-5n-1.jpg',
       '/tours/karnataka-coastal-gokarna-5n-2.jpg',
@@ -1628,7 +1628,7 @@ export const MOCK_TOURS: TourPackage[] = [
     tourType: 'pilgrimage',
     durationDays: 4,
     basePrice: 11999,
-    featuredImage: '/tours/tamilnadu-madurai-rameswaram-4d-1.jpg',
+    featuredImage: '/tours/tamilnadu-madurai-rameswaram-4d-5.jpg',
     gallery: [
       '/tours/tamilnadu-madurai-rameswaram-4d-1.jpg',
       '/tours/tamilnadu-madurai-rameswaram-4d-2.jpg',
