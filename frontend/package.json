@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
+    "validate:images": "node scripts/validateImages.mjs",
+    "prebuild": "npm run validate:images",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

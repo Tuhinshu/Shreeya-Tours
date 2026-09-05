@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const crypto = require('crypto');
 
 // Fetch credentials from env
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
@@ -46,7 +47,7 @@ router.post('/create-order', async (req, res, next) => {
         order_amount: parseFloat(amount),
         order_currency: 'INR',
         customer_details: {
-          customer_id: `cust_${customerPhone}`,
+          customer_id: `cust_${customerPhone.replace(/[^0-9]/g, '')}`,
           customer_name: customerName,
           customer_email: customerEmail,
           customer_phone: customerPhone
@@ -81,16 +82,63 @@ router.post('/create-order', async (req, res, next) => {
 
 /**
  * Endpoint: POST /api/payments/webhook
- * Description: CashFree Payment webhook listener
+ * Description: CashFree Payment webhook listener with HMAC-SHA256 signature verification
  */
 router.post('/webhook', (req, res) => {
-  // Webhook payload signature validation would occur here in production
-  const { data } = req.body;
-  
-  console.log('🔔 Received CashFree Webhook Payload:', req.body);
-  
+  const signature = req.headers['x-webhook-signature'];
+  const timestamp = req.headers['x-webhook-timestamp'];
+
+  // In production or when credentials exist, strictly verify HMAC-SHA256 signature
+  if (CASHFREE_SECRET_KEY) {
+    if (!signature) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Missing x-webhook-signature header'
+      });
+    }
+
+    try {
+      const rawBody = req.rawBody ? req.rawBody.toString('utf-8') : JSON.stringify(req.body);
+      const signaturePayload = timestamp ? `${timestamp}${rawBody}` : rawBody;
+      
+      const expectedSignatureBase64 = crypto
+        .createHmac('sha256', CASHFREE_SECRET_KEY)
+        .update(signaturePayload)
+        .digest('base64');
+      
+      const expectedSignatureHex = crypto
+        .createHmac('sha256', CASHFREE_SECRET_KEY)
+        .update(signaturePayload)
+        .digest('hex');
+
+      const isValid = (signature === expectedSignatureBase64 || signature === expectedSignatureHex);
+
+      if (!isValid) {
+        console.warn('⚠️ Invalid CashFree webhook signature rejected');
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized: Invalid webhook signature'
+        });
+      }
+    } catch (err) {
+      console.error('Signature verification error:', err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Signature verification failed'
+      });
+    }
+  } else {
+    console.warn('⚠️ CASHFREE_SECRET_KEY not set - skipping webhook signature verification');
+  }
+
+  // Sanitized logging - ONLY log safe identifiers, never dump customer PII or raw payment credentials
+  const orderId = req.body?.data?.order?.order_id || req.body?.order_id || 'UNKNOWN';
+  const paymentStatus = req.body?.data?.payment?.payment_status || req.body?.type || 'RECEIVED';
+  console.log(`🔔 Verified CashFree Webhook: orderId=${orderId}, status=${paymentStatus}`);
+
   // Respond with 200 OK to acknowledge receipt
   return res.status(200).json({ status: 'ACKNOWLEDGED' });
 });
 
 module.exports = router;
+

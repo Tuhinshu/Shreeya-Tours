@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { SITE_CONFIG } from '@/config/site';
+import { persistContact } from '@/utils/localStore';
 
 export async function POST(request: Request) {
   try {
@@ -29,19 +31,52 @@ export async function POST(request: Request) {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: cleanedPhone,
-      destination,
+      destination: destination.trim(),
       travelDate,
       travelers: Number(travelers) || 1,
       message: message?.trim() || '',
       submittedAt: new Date().toISOString()
     };
 
-    console.info(`[Contact Enquiry Received] ID: ${enquiryId} | Client: ${enquiryRecord.name} | Dest: ${destination}`);
+    // 1. Guaranteed local persistence
+    persistContact(enquiryRecord);
+    console.info(`[Contact Enquiry Persisted] ID: ${enquiryId} | Client: ${enquiryRecord.name} | Dest: ${destination}`);
+
+    // 2. Forward to Express backend API if configured
+    let backendSynced = false;
+    if (SITE_CONFIG.apiUrl) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        const res = await fetch(`${SITE_CONFIG.apiUrl}/api/bookings/contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: enquiryRecord.name,
+            email: enquiryRecord.email,
+            phone: enquiryRecord.phone,
+            destination: enquiryRecord.destination,
+            message: `Travel Date: ${travelDate}, Travelers: ${travelers}. Notes: ${enquiryRecord.message}`
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          backendSynced = true;
+          console.info(`[Contact Backend Forwarded] Successfully synced with Express backend`);
+        }
+      } catch (err: any) {
+        console.warn(`[Contact Backend Notice] Backend sync bypassed: ${err?.message}`);
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Contact enquiry submitted successfully',
-      enquiryId
+      message: 'Contact enquiry submitted and persisted successfully',
+      enquiryId,
+      backendSynced
     });
 
   } catch (error) {
@@ -52,3 +87,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

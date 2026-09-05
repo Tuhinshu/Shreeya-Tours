@@ -11,7 +11,10 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
     "dev:cms": "npm --prefix cms run dev",
+    "validate:images": "npm --prefix frontend run validate:images",
     "build:frontend": "npm --prefix frontend run build",
-    "test:backend": "npm --prefix backend test"
+    "build": "npm --prefix frontend run build",
+    "test:backend": "npm --prefix backend test",
+    "test": "npm --prefix backend test"
   }
 }

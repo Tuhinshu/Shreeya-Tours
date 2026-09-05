@@ -7,7 +7,7 @@ export const SITE_CONFIG = {
   tagline: 'Trusted Indian Travel Partner',
   phone: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '916353818605',
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'shreeyatours19@gmail.com',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || '',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   officeState: 'Gujarat',
   
   /**

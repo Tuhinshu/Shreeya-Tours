@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { SITE_CONFIG } from '@/config/site';
 import NavDropdown from '@/components/NavDropdown';
 import { DESTINATION_CATEGORIES } from '@/utils/destinationData';
@@ -34,7 +35,14 @@ export default function Header() {
           {/* Logo Branding Area */}
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <img src="/logo.png" alt="Shreeya Tours" className="h-20 w-auto object-contain py-0.5" />
+              <Image
+                src="/logo.png"
+                alt="Shreeya Tours"
+                width={180}
+                height={60}
+                priority
+                className="h-20 w-auto object-contain py-0.5"
+              />
             </Link>
           </div>
 

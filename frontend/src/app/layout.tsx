@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.FRONTEND_URL || 'https://shreeyatours.com'),
   title: "Shreeya Tours - Experience the Difference",
   description: "Book customized cultural heritage tours, trekking routes, and beach holidays with transparent GST billing and instant WhatsApp confirmation.",
 };

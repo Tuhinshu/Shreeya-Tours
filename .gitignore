@@ -26,13 +26,8 @@ yarn-error.log*
 !.env.example
 !**/.env.example
 
-# IDE & OS files
-.vscode/
-.idea/
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-Thumbs.db
+# Runtime Data Storage
+backend/data/
+frontend/data/
+**/data/*.json
+

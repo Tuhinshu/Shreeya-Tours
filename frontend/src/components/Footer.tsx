@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { SITE_CONFIG } from '@/config/site';
 
 export default function Footer() {
@@ -10,7 +11,7 @@ export default function Footer() {
           {/* Logo & Agency pitch */}
           <div className="space-y-4">
             <Link href="/" className="inline-block bg-white p-3 rounded-xl shadow-md hover:opacity-95 transition-opacity">
-              <img src="/logo.png" alt="Shreeya Tours" className="h-18 w-auto object-contain" />
+              <Image src="/logo.png" alt="Shreeya Tours" width={160} height={54} className="h-16 w-auto object-contain" />
             </Link>
             <p className="text-xs text-red-200 leading-relaxed">
               Experience the Difference. Explore cultural heritage, adventure routes, pilgrimage tours, and luxury beach holidays across India. Registered with Ministry of Tourism.

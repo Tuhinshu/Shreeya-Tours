@@ -1,0 +1,8 @@
+# Sanity Studio Runtime & Dependencies
+.sanity/
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log

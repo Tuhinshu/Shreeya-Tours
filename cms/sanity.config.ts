@@ -8,8 +8,8 @@ export default defineConfig({
   name: 'default',
   title: 'Tours & Travels CMS',
 
-  projectId: 'your-project-id',
-  dataset: 'production',
+  projectId: process.env.SANITY_STUDIO_PROJECT_ID || 'shreeya-tours-cms',
+  dataset: process.env.SANITY_STUDIO_DATASET || 'production',
 
   plugins: [structureTool()],
 
