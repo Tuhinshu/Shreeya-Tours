@@ -103,10 +103,12 @@ export default function AboutUs() {
           
           <div className="lg:col-span-5 relative bg-white p-4 rounded-3xl shadow-lg border border-gray-100 flex flex-col justify-center items-center">
             <div className="relative w-full h-[320px] rounded-2xl overflow-hidden bg-gray-100">
-              <img 
+              <Image 
                 src="https://images.unsplash.com/photo-1506461883276-594a12b11db3?auto=format&fit=crop&w=800&q=85" 
                 alt="Taj Mahal heritage tourism" 
-                className="w-full h-full object-cover" 
+                fill
+                sizes="(max-width: 1024px) 100vw, 500px"
+                className="object-cover" 
               />
             </div>
             <div className="absolute -bottom-6 -right-6 bg-secondary text-primary px-6 py-4.5 rounded-2xl shadow-xl border border-primary/10 hidden sm:block text-center">

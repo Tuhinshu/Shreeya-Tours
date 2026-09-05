@@ -28,12 +28,15 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
         {/* Visual Photo Gallery (5-Photo Responsive Layout) */}
         <div className="bg-white rounded-2xl p-4 shadow border border-gray-100 space-y-3">
           <div className="h-[320px] sm:h-[420px] rounded-xl overflow-hidden bg-gray-100 relative group">
-            <img
+            <Image
               src={selectedImage}
               alt={tour.name}
-              className="w-full h-full object-cover transition-all duration-300"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+              className="object-cover transition-all duration-300"
+              priority
+              onError={() => {
+                setSelectedImage(DEFAULT_FALLBACK_IMAGE);
               }}
             />
             <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
@@ -48,19 +51,18 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
                 key={index}
                 onClick={() => setSelectedImage(imgUrl)}
                 aria-label={"View photo " + (index + 1)}
-                className={"h-16 sm:h-20 md:h-24 rounded-xl overflow-hidden border-2 transition-all cursor-pointer " + (
+                className={"relative h-16 sm:h-20 md:h-24 rounded-xl overflow-hidden border-2 transition-all cursor-pointer " + (
                   selectedImage === imgUrl
                     ? "border-primary ring-2 ring-primary/30 opacity-100 scale-95 shadow-md"
                     : "border-transparent opacity-70 hover:opacity-100 hover:scale-[1.02]"
                 )}
               >
-                <img
+                <Image
                   src={imgUrl}
                   alt={tour.name + " Photo " + (index + 1)}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = DEFAULT_FALLBACK_IMAGE;
-                  }}
+                  fill
+                  sizes="(max-width: 768px) 20vw, 150px"
+                  className="object-cover"
                 />
               </button>
             ))}

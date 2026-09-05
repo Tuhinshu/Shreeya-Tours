@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { MOCK_TOURS } from '@/utils/mockData';
@@ -58,13 +59,13 @@ function TourCatalogContent() {
       {/* Catalog Hero Banner with Authentic Travel Backdrop and Red Gradient Overlay */}
       <div className="relative text-white py-20 px-4 text-center overflow-hidden bg-[#590006]">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85"
             alt="Incredible India Tour Packages"
-            className="w-full h-full object-cover object-center scale-105"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1920&q=85';
-            }}
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover object-center scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/75 via-[#92000A]/60 to-[#730008]/70"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
@@ -209,16 +210,12 @@ function TourCatalogContent() {
               >
                 {/* Image Container */}
                 <div className="h-56 w-full relative overflow-hidden bg-gray-100">
-                  <img
+                  <Image
                     src={tour.featuredImage}
                     alt={tour.name}
-                    width={800}
-                    height={500}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
-                    }}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                     {tour.durationDays} Days

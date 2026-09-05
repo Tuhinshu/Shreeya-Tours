@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { MOCK_TOURS } from '@/utils/mockData';
 import ReviewsCarousel from '@/components/ReviewsCarousel';
@@ -70,13 +71,13 @@ export default function HomePage() {
               idx === currentHeroSlide ? 'opacity-100 scale-105 transition-transform duration-10000' : 'opacity-0 scale-100 pointer-events-none'
             }`}
           >
-            <img
+            <Image
               src={slide.url}
               alt={slide.title}
-              className="h-full w-full object-cover object-center"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
-              }}
+              fill
+              sizes="100vw"
+              priority={idx === 0}
+              className="object-cover object-center"
             />
           </div>
         ))}
@@ -222,16 +223,12 @@ export default function HomePage() {
             >
               {/* Image Container */}
               <div className="h-56 w-full relative overflow-hidden bg-gray-100">
-                <img
+                <Image
                   src={tour.featuredImage}
                   alt={tour.name}
-                  width={800}
-                  height={500}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
-                  }}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                   {tour.durationDays} Days

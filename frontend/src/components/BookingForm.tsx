@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SITE_CONFIG } from '@/config/site';
 
 interface BookingFormProps {
@@ -10,10 +10,17 @@ interface BookingFormProps {
   onSuccess?: () => void;
 }
 
+interface QuoteDetails {
+  baseAmount: number;
+  gstAmount: number;
+  gstRate: number;
+  totalAmount: number;
+}
+
 export default function BookingForm({
-  packageId = '1',
-  packageName = 'Magical Kerala Backwaters',
-  basePrice = 24999,
+  packageId = 'andaman-pb-3n',
+  packageName = 'Scenic Andaman Express (Port Blair)',
+  basePrice = 11150,
   onSuccess,
 }: BookingFormProps) {
   const [step, setStep] = useState(1);
@@ -26,20 +33,69 @@ export default function BookingForm({
     specialRequests: '',
   });
 
+  const [quote, setQuote] = useState<QuoteDetails | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedBookingId, setSubmittedBookingId] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Calculate 2-month (60-day) calendar bounds starting from today
+  // Calculate 2-month (60-day) calendar bounds starting from tomorrow
   const { minDate, maxDate } = useMemo(() => {
-    const today = new Date();
-    const min = today.toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const min = tomorrow.toISOString().split('T')[0];
 
-    const maxDateObj = new Date(today);
-    maxDateObj.setDate(maxDateObj.getDate() + 60); // 60 days window
+    const maxDateObj = new Date();
+    maxDateObj.setDate(maxDateObj.getDate() + 60);
     const max = maxDateObj.toISOString().split('T')[0];
 
     return { minDate: min, maxDate: max };
   }, []);
+
+  // Fetch or calculate authoritative server-side quote
+  useEffect(() => {
+    let isCancelled = false;
+    const backendUrl = SITE_CONFIG.apiUrl || 'http://localhost:5000';
+
+    async function fetchQuote() {
+      try {
+        const res = await fetch(`${backendUrl}/api/bookings/quote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ packageId, pax: formData.pax, state: 'Gujarat' }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (!isCancelled && data.quote) {
+            setQuote({
+              baseAmount: data.quote.baseAmount,
+              gstAmount: data.quote.gstAmount,
+              gstRate: data.quote.gstRate,
+              totalAmount: data.quote.totalAmount,
+            });
+            return;
+          }
+        }
+      } catch {
+        // Fallback to exact server GST formula (5% for standard tour)
+      }
+
+      // Parity fallback
+      if (!isCancelled) {
+        const base = basePrice * formData.pax;
+        const gst = Math.round(base * 0.05);
+        setQuote({
+          baseAmount: base,
+          gstAmount: gst,
+          gstRate: 5,
+          totalAmount: base + gst,
+        });
+      }
+    }
+
+    fetchQuote();
+    return () => { isCancelled = true; };
+  }, [packageId, formData.pax, basePrice]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -52,15 +108,15 @@ export default function BookingForm({
   const handlePaxChange = (increment: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      pax: increment ? prev.pax + 1 : Math.max(1, prev.pax - 1),
+      pax: increment ? Math.min(20, prev.pax + 1) : Math.max(1, prev.pax - 1),
     }));
   };
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
-    if (cleanPhone.length < 10 || cleanPhone.length > 13) {
-      alert('Please enter a valid 10-13 digit phone or WhatsApp number.');
+    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+      alert('Please enter a valid 10-15 digit phone or WhatsApp number.');
       return;
     }
     setStep((prev) => prev + 1);
@@ -74,21 +130,21 @@ export default function BookingForm({
     e.preventDefault();
     setLoading(true);
 
-    // Validate that travel date is within the 2-month (60 days) window
     if (formData.travelDate < minDate || formData.travelDate > maxDate) {
-      alert('Please select a travel date within the next 2 months (60 days).');
+      alert('Please select a travel date between tomorrow and the next 60 days.');
       setLoading(false);
       return;
     }
 
-    const totalSum = basePrice * formData.pax;
-
     const payload = {
-      ...formData,
       packageId,
-      packageName,
-      basePrice,
-      totalAmount: totalSum,
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      travelDate: formData.travelDate,
+      pax: formData.pax,
+      specialRequests: formData.specialRequests.trim() || undefined,
+      state: 'Gujarat',
     };
 
     try {
@@ -98,11 +154,13 @@ export default function BookingForm({
         body: JSON.stringify(payload),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to submit enquiry');
+        throw new Error(data.error || 'Failed to submit enquiry');
       }
 
+      setSubmittedBookingId(data.bookingId || '');
       setSubmitted(true);
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
@@ -114,7 +172,8 @@ export default function BookingForm({
   };
 
   if (submitted) {
-    const whatsappMessage = `Hi Shreeya Tours! I have submitted a booking enquiry for *${packageName}* (${formData.pax} PAX) on ${formData.travelDate}.\n\nLead Name: ${formData.name}\nContact: ${formData.phone}\nEstimated Total: ₹${(basePrice * formData.pax).toLocaleString('en-IN')}`;
+    const totalDisplay = quote ? quote.totalAmount.toLocaleString('en-IN') : (basePrice * formData.pax).toLocaleString('en-IN');
+    const whatsappMessage = `Hi Shreeya Tours! I have submitted a booking enquiry (Ref: ${submittedBookingId}) for *${packageName}* (${formData.pax} PAX) on ${formData.travelDate}.\n\nLead Name: ${formData.name}\nContact: ${formData.phone}\nEstimated Total (inc. 5% GST): ₹${totalDisplay}${formData.specialRequests ? `\nSpecial Requests: ${formData.specialRequests}` : ''}`;
 
     return (
       <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md mx-auto border border-gray-100 animate-fade-in">
@@ -124,8 +183,11 @@ export default function BookingForm({
           </svg>
         </div>
         <h3 className="text-2xl font-bold text-gray-900 mb-2">Enquiry Submitted!</h3>
-        <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-          Thank you, <span className="font-semibold">{formData.name}</span>. Our tour specialists will contact you shortly on <span className="font-semibold">{formData.phone}</span> to finalize your itinerary for <span className="font-semibold">{packageName}</span> (for {formData.pax} PAX).
+        <p className="text-gray-600 mb-2 text-sm leading-relaxed">
+          Thank you, <span className="font-semibold">{formData.name}</span>. Your enquiry for <span className="font-semibold">{packageName}</span> ({formData.pax} PAX) is registered with ID <span className="font-mono font-bold text-primary">{submittedBookingId}</span>.
+        </p>
+        <p className="text-gray-500 mb-6 text-xs">
+          Our tour specialists will contact you shortly on <span className="font-semibold">{formData.phone}</span>.
         </p>
 
         {/* Instant WhatsApp Handoff Button */}
@@ -148,14 +210,12 @@ export default function BookingForm({
     );
   }
 
-  const totalSum = basePrice * formData.pax;
-
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 max-w-lg mx-auto overflow-hidden">
       {/* Header and Step Indicators */}
       <div className="bg-primary text-white p-6">
         <h3 className="text-xl font-extrabold uppercase tracking-tight">Book Your Adventure</h3>
-        <p className="text-xs text-red-100 mt-1">Fill out the form below to receive a custom quote</p>
+        <p className="text-xs text-red-100 mt-1">Fill out the form below to receive an official quote</p>
         
         {/* Progress Bar */}
         <div className="flex items-center justify-between mt-6 text-xs text-red-100 max-w-xs mx-auto">
@@ -184,6 +244,8 @@ export default function BookingForm({
                 type="text"
                 name="name"
                 required
+                minLength={2}
+                maxLength={100}
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Rohan Sharma"
@@ -197,6 +259,7 @@ export default function BookingForm({
                 type="email"
                 name="email"
                 required
+                maxLength={254}
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="rohan@example.com"
@@ -263,7 +326,7 @@ export default function BookingForm({
               <div className="flex items-center justify-between border border-gray-200 p-3.5 rounded-xl bg-gray-50/60">
                 <div>
                   <p className="font-bold text-sm text-gray-900">PAX Count</p>
-                  <p className="text-xs text-gray-500">Total passengers traveling</p>
+                  <p className="text-xs text-gray-500">Max 20 passengers per booking</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <button
@@ -277,15 +340,17 @@ export default function BookingForm({
                   <input
                     type="number"
                     min="1"
+                    max="20"
                     name="pax"
                     value={formData.pax}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pax: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pax: Math.min(20, Math.max(1, parseInt(e.target.value) || 1)) }))}
                     className="w-14 text-center font-black text-gray-900 border border-gray-200 rounded-lg py-1 text-sm bg-white"
                   />
                   <button
                     type="button"
                     onClick={() => handlePaxChange(true)}
-                    className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-900 font-bold transition cursor-pointer"
+                    disabled={formData.pax >= 20}
+                    className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 font-bold transition cursor-pointer"
                   >
                     +
                   </button>
@@ -298,6 +363,7 @@ export default function BookingForm({
               <textarea
                 name="specialRequests"
                 rows={2}
+                maxLength={500}
                 value={formData.specialRequests}
                 onChange={handleInputChange}
                 placeholder="Vegetarian meals, senior citizen assistance, extra bed..."
@@ -305,7 +371,7 @@ export default function BookingForm({
               />
             </div>
 
-            {/* Price Estimate */}
+            {/* Authoritative Server-Side Quote Breakdown */}
             <div className="bg-red-50/60 border border-primary/20 p-4 rounded-xl space-y-1.5">
               <div className="flex justify-between text-xs text-gray-600 font-medium">
                 <span>Base Price per PAX</span>
@@ -315,9 +381,17 @@ export default function BookingForm({
                 <span>Total PAX</span>
                 <span>{formData.pax} Passenger{formData.pax > 1 ? 's' : ''}</span>
               </div>
+              <div className="flex justify-between text-xs text-gray-600 font-medium">
+                <span>Base Subtotal</span>
+                <span>₹{(quote?.baseAmount || (basePrice * formData.pax)).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-600 font-medium">
+                <span>GST (5% Tour Operator Rate)</span>
+                <span>₹{(quote?.gstAmount || Math.round(basePrice * formData.pax * 0.05)).toLocaleString('en-IN')}</span>
+              </div>
               <div className="flex justify-between text-sm font-black text-primary pt-2 border-t border-primary/10">
-                <span>Estimated Subtotal (excl. GST)</span>
-                <span>₹{totalSum.toLocaleString('en-IN')}</span>
+                <span>Total Quote (GST Included)</span>
+                <span>₹{(quote?.totalAmount || Math.round(basePrice * formData.pax * 1.05)).toLocaleString('en-IN')}</span>
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MOCK_TOURS } from '@/utils/mockData';
@@ -98,10 +99,13 @@ export default async function TourDetailPage({ params }: PageProps) {
       {/* Detail Header Banner with Authentic Destination Image Backdrop & Semi-Transparent Red Gradient */}
       <div className="relative text-white py-16 px-4 overflow-hidden bg-[#590006]">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src={tour.featuredImage || DEFAULT_FALLBACK_IMAGE}
             alt={tour.name}
-            className="w-full h-full object-cover object-center scale-105"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover object-center scale-105"
           />
           {/* Semi-Transparent Red Gradient Overlay so Tour Image is clearly visible */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#590006]/75 via-[#92000A]/55 to-[#730008]/65"></div>
