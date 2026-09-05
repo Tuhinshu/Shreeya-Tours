@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo } from 'react';
+import { SITE_CONFIG } from '@/config/site';
 
 interface BookingFormProps {
   packageId?: string;
@@ -57,6 +58,11 @@ export default function BookingForm({
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10 || cleanPhone.length > 13) {
+      alert('Please enter a valid 10-13 digit phone or WhatsApp number.');
+      return;
+    }
     setStep((prev) => prev + 1);
   };
 
@@ -86,20 +92,30 @@ export default function BookingForm({
     };
 
     try {
-      // In production, dispatch to backend /api/bookings
-      console.log('Submitting booking payload:', payload);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit enquiry');
+      }
+
       setSubmitted(true);
       if (onSuccess) onSuccess();
-    } catch (err) {
-      console.error('Booking submission error:', err);
-      alert('Error submitting enquiry. Please try again.');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Error submitting enquiry. Please try again.';
+      alert(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
   if (submitted) {
+    const whatsappMessage = `Hi Shreeya Tours! I have submitted a booking enquiry for *${packageName}* (${formData.pax} PAX) on ${formData.travelDate}.\n\nLead Name: ${formData.name}\nContact: ${formData.phone}\nEstimated Total: ₹${(basePrice * formData.pax).toLocaleString('en-IN')}`;
+
     return (
       <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md mx-auto border border-gray-100 animate-fade-in">
         <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -111,9 +127,20 @@ export default function BookingForm({
         <p className="text-gray-600 mb-6 text-sm leading-relaxed">
           Thank you, <span className="font-semibold">{formData.name}</span>. Our tour specialists will contact you shortly on <span className="font-semibold">{formData.phone}</span> to finalize your itinerary for <span className="font-semibold">{packageName}</span> (for {formData.pax} PAX).
         </p>
+
+        {/* Instant WhatsApp Handoff Button */}
+        <a
+          href={SITE_CONFIG.getWhatsAppUrl(whatsappMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3.5 bg-secondary hover:bg-secondary-hover text-primary font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md flex items-center justify-center space-x-2 border border-primary/10 mb-3"
+        >
+          <span>Chat on WhatsApp with Enquiry ➔</span>
+        </a>
+
         <button
           onClick={() => { setSubmitted(false); setStep(1); }}
-          className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
+          className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm"
         >
           Book Another Tour
         </button>
@@ -183,6 +210,8 @@ export default function BookingForm({
                 type="tel"
                 name="phone"
                 required
+                pattern="[0-9+\s\-]{10,15}"
+                title="Please enter a valid 10 to 15 digit phone or WhatsApp number"
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="+91 98765 43210"

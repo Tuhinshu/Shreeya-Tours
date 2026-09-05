@@ -1,40 +1,41 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MOCK_TOURS } from '@/utils/mockData';
 import ReviewsCarousel from '@/components/ReviewsCarousel';
+import { SITE_CONFIG } from '@/config/site';
 
 const HERO_CAROUSEL_IMAGES = [
   {
-    url: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85',
+    url: '/hero/hero-1.jpg',
     title: 'Aravali Hills & Royal Forts',
     subtitle: 'Rugged Ridges & Historic Bastions'
   },
   {
-    url: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1920&q=85',
+    url: '/hero/hero-2.jpg',
     title: 'Munnar Emerald Tea Valleys',
     subtitle: 'Rolling Mist-Covered Hills of Kerala'
   },
   {
-    url: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=1920&q=85',
+    url: '/hero/hero-3.jpg',
     title: 'Serene Kerala Backwaters',
     subtitle: 'Traditional Houseboats on Palm-Fringed Canals'
   },
   {
-    url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=85',
+    url: '/hero/hero-4.jpg',
     title: 'Himalayan High Passes',
     subtitle: 'Pangong Tso & Leh Ladakh'
   },
   {
-    url: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1920&q=85',
+    url: '/hero/hero-5.jpg',
     title: 'Western Heritage & Landscapes',
     subtitle: 'Gujarat, Diu & Statue of Unity'
   }
 ];
 
 export default function HomePage() {
-  const [activeRegion, setActiveRegion] = useState<'all' | 'west_india' | 'south_india' | 'himalayas' | 'islands'>('all');
+  const [activeRegion, setActiveRegion] = useState<'all' | 'west_india' | 'south_india' | 'north_india' | 'east_india'>('all');
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
   const [showAllTours, setShowAllTours] = useState(false);
 
@@ -49,11 +50,7 @@ export default function HomePage() {
   // Filter mock tours
   const filteredTours = MOCK_TOURS.filter((tour) => {
     if (activeRegion === 'all') return true;
-    if (activeRegion === 'west_india') return tour.region === 'west_india';
-    if (activeRegion === 'south_india') return tour.region === 'south_india';
-    if (activeRegion === 'himalayas') return tour.region === 'north_india';
-    if (activeRegion === 'islands') return tour.region === 'east_india';
-    return true;
+    return tour.region === activeRegion;
   });
 
   // Display top 6 initially, or all if toggled
@@ -78,7 +75,7 @@ export default function HomePage() {
               alt={slide.title}
               className="h-full w-full object-cover object-center"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920&q=85';
+                (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
               }}
             />
           </div>
@@ -116,7 +113,7 @@ export default function HomePage() {
                 <span>➔</span>
               </Link>
               <a
-                href="https://wa.me/916353818605?text=Hi!%20I%20want%20to%20enquire%20about%20tour%20packages%20in%20India."
+                href={SITE_CONFIG.getWhatsAppUrl('Hi! I want to enquire about tour packages in India.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto bg-secondary hover:bg-secondary-hover text-primary text-xs font-black tracking-wider uppercase px-8 py-4.5 rounded-xl transition duration-300 shadow-xl hover:shadow-secondary/30 hover:-translate-y-0.5 flex items-center justify-center space-x-2 cursor-pointer"
@@ -156,7 +153,12 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col justify-center pt-6 md:pt-0">
-            <span className="text-3xl sm:text-4xl font-black text-[#6B923D]">4.9 ★</span>
+            <span className="text-3xl sm:text-4xl font-black text-[#6B923D] flex items-center justify-center space-x-1">
+              <span>4.9</span>
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 text-secondary fill-current inline-block" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            </span>
             <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-gray-500 mt-2">Google Verified Reviews</span>
           </div>
 
@@ -190,13 +192,13 @@ export default function HomePage() {
               { id: 'all', label: 'All Packages' },
               { id: 'west_india', label: 'West India' },
               { id: 'south_india', label: 'South India' },
-              { id: 'himalayas', label: 'The Himalayas' },
-              { id: 'islands', label: 'Islands' },
+              { id: 'north_india', label: 'The Himalayas' },
+              { id: 'east_india', label: 'Islands & East' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
-                  setActiveRegion(tab.id as 'all' | 'west_india' | 'south_india' | 'himalayas' | 'islands');
+                  setActiveRegion(tab.id as 'all' | 'west_india' | 'south_india' | 'north_india' | 'east_india');
                   setShowAllTours(false);
                 }}
                 className={`px-4.5 py-2 rounded-xl text-xs font-black tracking-wider uppercase transition cursor-pointer ${
@@ -223,10 +225,12 @@ export default function HomePage() {
                 <img
                   src={tour.featuredImage}
                   alt={tour.name}
+                  width={800}
+                  height={500}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+                    (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
                   }}
                 />
                 <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">

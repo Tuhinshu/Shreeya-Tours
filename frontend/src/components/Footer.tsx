@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { SITE_CONFIG } from '@/config/site';
 
 export default function Footer() {
   return (
@@ -61,13 +62,13 @@ export default function Footer() {
                 <svg className="w-3.5 h-3.5 text-red-200 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.44-5.19-3.806-6.633-6.633l1.293-1.03a1.125 1.125 0 00.417-1.173L6.763 2.22a1.125 1.125 0 00-1.091-.852H3.75A2.25 2.25 0 001.5 3.75v3h.75z" />
                 </svg>
-                <span className="text-white font-semibold">+91 63538 18605</span>
+                <span className="text-white font-semibold">+{SITE_CONFIG.phone.replace(/(\d{2})(\d{5})(\d{5})/, '$1 $2 $3')}</span>
               </p>
               <p className="flex items-center space-x-2">
                 <svg className="w-3.5 h-3.5 text-red-200 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                 </svg>
-                <span className="text-red-100 hover:text-white">shreeyatours19@gmail.com</span>
+                <span className="text-red-100 hover:text-white">{SITE_CONFIG.email}</span>
               </p>
               <p className="text-xs text-red-200 pt-1 leading-relaxed">
                 A-102, Krishna Empire, Near Yoginagar Township, Opp. Ramakaka Dery, Behind Shell Petrol Pump, Chhani, Vadodara - 391740.

@@ -54,40 +54,29 @@ body {
 
 /* --- HOVER POP SYSTEM --- */
 
-/* Buttons & Interactive Elements */
-button,
+/* Scoped Interactive Elements */
+.hover-pop,
+.hover-btn-pop,
 a.bg-primary,
-a.bg-secondary,
-a.border-black,
-.cursor-pointer {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+a.bg-secondary {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:hover,
+.hover-pop:hover,
+.hover-btn-pop:hover,
 a.bg-primary:hover,
-a.bg-secondary:hover,
-a.border-black:hover,
-.cursor-pointer:hover {
-  transform: translateY(-3px) scale(1.03) !important;
-  box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Disable pop scaling for standard inputs/form components */
-input:hover,
-select:hover,
-textarea:hover,
-iframe:hover {
-  transform: none !important;
-  box-shadow: none !important;
+a.bg-secondary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 18px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
 }
 
 /* Card hover popping */
 .hover-card-pop {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-card-pop:hover {
-  transform: translateY(-8px) scale(1.02) !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
 }
 

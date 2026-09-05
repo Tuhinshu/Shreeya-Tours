@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { SITE_CONFIG } from '@/config/site';
 
 export const metadata = {
   title: 'Terms of Booking | Shreeya Tours',
@@ -45,7 +46,7 @@ export default function TermsOfBookingPage() {
           <div className="border-t border-gray-100 pt-6">
             <h2 className="text-xl font-black text-gray-900 uppercase tracking-wide">2. Cancellation & Refund Policy</h2>
             <p className="mt-2">
-              If you need to cancel your booked tour, written notification must be sent to our official email (<a href="mailto:shreeyatours19@gmail.com" className="text-primary font-semibold hover:underline">shreeyatours19@gmail.com</a>) or WhatsApp helpline. Cancellation charges are calculated as follows:
+              If you need to cancel your booked tour, written notification must be sent to our official email (<a href={SITE_CONFIG.getMailtoUrl()} className="text-primary font-semibold hover:underline">{SITE_CONFIG.email}</a>) or WhatsApp helpline. Cancellation charges are calculated as follows:
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-xs text-left border border-gray-200 rounded-lg overflow-hidden">

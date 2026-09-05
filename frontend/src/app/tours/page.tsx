@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
@@ -11,12 +11,12 @@ function TourCatalogContent() {
   const paramRegion = searchParams.get('region');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
 
   // Derive active region and type (defaulting to URL param or 'all')
-  const activeRegion = selectedRegion ?? paramRegion ?? 'all';
-  const activeType = selectedType ?? paramType ?? 'all';
+  const activeRegion = selectedRegion || paramRegion || 'all';
+  const activeType = selectedType || paramType || 'all';
 
   const filteredTours = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -212,10 +212,12 @@ function TourCatalogContent() {
                   <img
                     src={tour.featuredImage}
                     alt={tour.name}
+                    width={800}
+                    height={500}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+                      (e.target as HTMLImageElement).src = '/hero/hero-1.jpg';
                     }}
                   />
                   <div className="absolute top-4 left-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
