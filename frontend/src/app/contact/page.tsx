@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { SITE_CONFIG } from '@/config/site';
+import { MOCK_TOURS } from '@/utils/mockData';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -18,21 +20,21 @@ export default function ContactUs() {
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigator.clipboard.writeText('shreeyatours19@gmail.com');
+    navigator.clipboard.writeText(SITE_CONFIG.email);
     setEmailCopied(true);
     setTimeout(() => setEmailCopied(false), 3000);
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
       const start = Date.now();
-      window.location.href = 'googlegmail:///co?to=shreeyatours19@gmail.com';
+      window.location.href = `googlegmail:///co?to=${SITE_CONFIG.email}`;
       setTimeout(() => {
         if (Date.now() - start < 1500) {
-          window.location.href = 'mailto:shreeyatours19@gmail.com';
+          window.location.href = SITE_CONFIG.getMailtoUrl();
         }
       }, 500);
     } else {
-      window.open('https://mail.google.com/mail/?view=cm&fs=1&to=shreeyatours19@gmail.com', '_blank');
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${SITE_CONFIG.email}`, '_blank');
     }
   };
 
@@ -44,14 +46,30 @@ export default function ContactUs() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const cleanPhone = formData.phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10 || cleanPhone.length > 13) {
+      alert('Please enter a valid 10-13 digit phone number.');
+      setLoading(false);
+      return;
+    }
     
-    // Simulate API request
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to send enquiry');
+      }
+
       setSubmitted(true);
-    } catch (err) {
-      console.error('Contact submit error:', err);
-      alert('Error sending message. Please try again.');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Error sending message. Please try again.';
+      alert(errMsg);
     } finally {
       setLoading(false);
     }
@@ -109,10 +127,10 @@ export default function ContactUs() {
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                   <div>
                     <p className="text-sm font-semibold text-gray-800">Direct Chat / Active Helpline</p>
-                    <p className="text-base font-black text-primary mt-0.5">+91 63538 18605</p>
+                    <p className="text-base font-black text-primary mt-0.5">+{SITE_CONFIG.phone.replace(/(\d{2})(\d{5})(\d{5})/, '$1 $2 $3')}</p>
                   </div>
                   <a 
-                    href="https://wa.me/916353818605?text=Hi!%20I%20want%20to%20enquire%20about%20tour%20packages."
+                    href={SITE_CONFIG.getWhatsAppUrl('Hi! I want to enquire about tour packages.')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center bg-secondary hover:bg-secondary-hover text-primary font-black px-4 py-2.5 rounded-xl text-xs transition border border-primary/10 tracking-wider uppercase shrink-0"
@@ -135,7 +153,7 @@ export default function ContactUs() {
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                   <div>
                     <p className="text-sm font-semibold text-gray-800">General & Booking Enquiries</p>
-                    <p className="text-sm font-bold text-primary mt-0.5">shreeyatours19@gmail.com</p>
+                    <p className="text-sm font-bold text-primary mt-0.5">{SITE_CONFIG.email}</p>
                   </div>
                   <button 
                     onClick={handleCopyEmail}
@@ -210,19 +228,31 @@ export default function ContactUs() {
               </div>
 
               {submitted ? (
-                <div className="text-center py-10 space-y-4 animate-fade-in">
-                  <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <div className="text-center py-8 space-y-4 animate-fade-in">
+                  <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Thank You!</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Enquiry Received!</h3>
                   <p className="text-xs text-gray-600 leading-relaxed font-semibold">
-                    Your enquiry for <span className="text-primary font-black">{formData.destination}</span> has been received. We will contact you on <span className="text-primary font-black">{formData.phone}</span> shortly!
+                    Thank you, <span className="font-bold text-gray-900">{formData.name}</span>. Your enquiry for <span className="text-primary font-black">{formData.destination}</span> has been received. Our team will contact you on <span className="text-primary font-black">{formData.phone}</span> shortly!
                   </p>
+
+                  <a
+                    href={SITE_CONFIG.getWhatsAppUrl(
+                      `Hi Shreeya Tours! I just submitted an enquiry for ${formData.destination} (${formData.travelers} PAX) for ${formData.travelDate}.\n\nName: ${formData.name}\nPhone: ${formData.phone}${formData.message ? `\nNotes: ${formData.message}` : ''}`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 bg-secondary hover:bg-secondary-hover text-primary font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md flex items-center justify-center space-x-2 border border-primary/10"
+                  >
+                    <span>Chat on WhatsApp Directly ➔</span>
+                  </a>
+
                   <button 
                     onClick={() => setSubmitted(false)}
-                    className="px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-hover transition"
+                    className="w-full py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-hover transition shadow-sm"
                   >
                     Submit Another Enquiry
                   </button>
@@ -262,29 +292,45 @@ export default function ContactUs() {
                       type="tel" 
                       name="phone" 
                       required 
+                      pattern="[0-9+\s\-]{10,15}"
+                      title="Please enter a valid 10 to 15 digit phone or WhatsApp number"
                       value={formData.phone} 
                       onChange={handleInputChange} 
-                      placeholder="9999999999" 
+                      placeholder="+91 98765 43210" 
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 text-sm shadow-sm"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-600 mb-1">Destination</label>
+                      <label className="block text-gray-600 mb-1">Destination / Package</label>
                       <select 
                         name="destination" 
                         value={formData.destination} 
                         onChange={handleInputChange} 
                         className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 text-sm shadow-sm bg-white"
                       >
-                        <option value="Statue of Unity">Statue of Unity</option>
-                        <option value="Royal Gujarat">Royal Gujarat</option>
-                        <option value="Kerala Backwaters">Kerala Backwaters</option>
-                        <option value="Goa Beach Resort">Goa Beach Resort</option>
-                        <option value="Rajasthan Tour">Rajasthan Tour</option>
-                        <option value="Karnataka/Tamil Nadu">Karnataka/Tamil Nadu</option>
-                        <option value="Himalayan Hills">Himalayan Hills</option>
+                        <option value="Custom Itinerary / Pan-India">Custom Tour (Pan-India)</option>
+                        <optgroup label="West India & Gujarat">
+                          {MOCK_TOURS.filter(t => t.region === 'west_india').map(t => (
+                            <option key={t.id} value={t.name}>{t.name}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="South India">
+                          {MOCK_TOURS.filter(t => t.region === 'south_india').map(t => (
+                            <option key={t.id} value={t.name}>{t.name}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="North India & Himalayas">
+                          {MOCK_TOURS.filter(t => t.region === 'north_india').map(t => (
+                            <option key={t.id} value={t.name}>{t.name}</option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="East India & Andaman">
+                          {MOCK_TOURS.filter(t => t.region === 'east_india').map(t => (
+                            <option key={t.id} value={t.name}>{t.name}</option>
+                          ))}
+                        </optgroup>
                       </select>
                     </div>
 

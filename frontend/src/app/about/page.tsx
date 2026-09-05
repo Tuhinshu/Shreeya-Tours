@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
-
 import Image from 'next/image';
+import { SITE_CONFIG } from '@/config/site';
 
 const TEAM_MEMBERS = [
   {
@@ -44,21 +44,21 @@ export default function AboutUs() {
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigator.clipboard.writeText('shreeyatours19@gmail.com');
+    navigator.clipboard.writeText(SITE_CONFIG.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
 
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
       const start = Date.now();
-      window.location.href = 'googlegmail:///co?to=shreeyatours19@gmail.com';
+      window.location.href = `googlegmail:///co?to=${SITE_CONFIG.email}`;
       setTimeout(() => {
         if (Date.now() - start < 1500) {
-          window.location.href = 'mailto:shreeyatours19@gmail.com';
+          window.location.href = SITE_CONFIG.getMailtoUrl();
         }
       }, 500);
     } else {
-      window.open('https://mail.google.com/mail/?view=cm&fs=1&to=shreeyatours19@gmail.com', '_blank');
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${SITE_CONFIG.email}`, '_blank');
     }
   };
   return (
@@ -193,7 +193,7 @@ export default function AboutUs() {
                 <p className="text-xs text-gray-500 font-semibold">Immediate inquiry response & customizable pricing quotes.</p>
               </div>
               <a 
-                href="https://wa.me/916353818605?text=Hi!%20I%20want%20to%20enquire%20about%20tour%20packages."
+                href={SITE_CONFIG.getWhatsAppUrl('Hi! I want to enquire about tour packages.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full text-center bg-secondary hover:bg-secondary-hover text-primary font-extrabold py-3 rounded-xl transition text-xs border border-primary/10 uppercase tracking-wider"

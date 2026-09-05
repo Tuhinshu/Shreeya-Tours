@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { SITE_CONFIG } from '@/config/site';
 
 export const metadata = {
   title: 'Privacy Policy | Shreeya Tours',
@@ -88,9 +89,9 @@ export default function PrivacyPolicyPage() {
               If you have any questions, wish to review or update your personal details, or have concerns regarding this policy, please contact our grievance officer:
             </p>
             <div className="mt-4 bg-gray-50 border border-gray-200 p-5 rounded-xl space-y-1 text-xs font-medium">
-              <p className="font-bold text-sm text-gray-900">Shreeya Tours</p>
-              <p>Email: <a href="mailto:shreeyatours19@gmail.com" className="text-primary font-semibold hover:underline">shreeyatours19@gmail.com</a></p>
-              <p>Phone: <span className="text-gray-900 font-semibold">+91 63538 18605</span></p>
+              <p className="font-bold text-sm text-gray-900">{SITE_CONFIG.name}</p>
+              <p>Email: <a href={SITE_CONFIG.getMailtoUrl()} className="text-primary font-semibold hover:underline">{SITE_CONFIG.email}</a></p>
+              <p>Phone: <span className="text-gray-900 font-semibold">+{SITE_CONFIG.phone.replace(/(\d{2})(\d{5})(\d{5})/, '$1 $2 $3')}</span></p>
               <p>Office: A-102, Krishna Empire, Near Yoginagar Township, Opp. Ramakaka Dery, Behind Shell Petrol Pump, Chhani, Vadodara, Gujarat - 391740</p>
             </div>
           </div>

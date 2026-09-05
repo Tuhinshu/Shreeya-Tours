@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { SITE_CONFIG } from '@/config/site';
 
 interface WhatsAppCTAProps {
   phoneNumber?: string;
@@ -8,7 +9,7 @@ interface WhatsAppCTAProps {
 }
 
 export default function WhatsAppCTA({
-  phoneNumber = '916353818605', // Shreeya Tours Phone Number
+  phoneNumber = SITE_CONFIG.phone,
   defaultMessage = 'Hi! I am interested in booking a tour package.',
 }: WhatsAppCTAProps) {
   const encodedText = encodeURIComponent(defaultMessage);
