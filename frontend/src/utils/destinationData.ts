@@ -1,4 +1,4 @@
-import { MOCK_TOURS, TourPackage } from './mockData';
+import { MOCK_TOURS } from './mockData';
 
 export interface TourCategoryItem {
   name: string;
