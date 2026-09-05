@@ -10,7 +10,7 @@ export interface TourPackage {
   id: string;
   name: string;
   slug: string;
-  region: 'north_india' | 'south_india' | 'east_india' | 'west_india' | 'international';
+  region: 'north_india' | 'south_india' | 'east_india' | 'west_india';
   tourType: 'heritage' | 'adventure' | 'leisure' | 'luxury' | 'pilgrimage';
   durationDays: number;
   basePrice: number;
