@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { SITE_CONFIG } from '@/config/site';
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +13,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const backendUrl = SITE_CONFIG.apiUrl || 'http://localhost:5000';
+    const isProd = process.env.NODE_ENV === 'production';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || (!isProd ? 'http://localhost:5000' : null);
+
+    if (isProd && !backendUrl) {
+      console.error('[Config Error] NEXT_PUBLIC_API_URL is missing in production.');
+      return NextResponse.json(
+        { success: false, error: 'Configuration Error: Production backend API URL is not configured.' },
+        { status: 500 }
+      );
+    }
 
     try {
       const controller = new AbortController();
@@ -58,12 +66,10 @@ export async function POST(request: Request) {
       );
     }
 
-  } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'Internal server error';
-    console.error('[Contact API Route Error]', errMsg);
+  } catch {
     return NextResponse.json(
-      { success: false, error: 'Internal server error processing contact enquiry' },
-      { status: 500 }
+      { success: false, error: 'Invalid contact request payload.' },
+      { status: 400 }
     );
   }
 }

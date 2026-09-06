@@ -68,22 +68,29 @@ function makeRequest(server, options, postData, rawData = null) {
   });
 }
 
+function formatDate(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getFutureDate(daysAhead = 10) {
   const d = new Date();
   d.setDate(d.getDate() + daysAhead);
-  return d.toISOString().split('T')[0];
+  return formatDate(d);
 }
 
 function getPastDate(daysAgo = 2) {
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
+  return formatDate(d);
 }
 
 function getFarFutureDate(daysAhead = 90) {
   const d = new Date();
   d.setDate(d.getDate() + daysAhead);
-  return d.toISOString().split('T')[0];
+  return formatDate(d);
 }
 
 function generateCashfreeWebhookPayload(orderId, paymentStatus = 'SUCCESS', timestamp = Date.now()) {
@@ -648,14 +655,14 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
     assert.strictEqual(res.statusCode, 413);
   });
 
-  // 26. Special requests successfully persisted
-  await t.test('26. Special requests field is sanitized and persisted end-to-end', async () => {
+  // 26. Special requests successfully persisted as plain text
+  await t.test('26. Special requests field is stored as plain text without pre-escaping', async () => {
     const specialText = 'Wheelchair required for senior citizen & strictly Jain food.';
-    const sanitizedExpected = escapeHtml(specialText);
     const res = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
       name: 'Special Req User',
       email: 'specialreq@example.com',
       phone: '9876543210',
+      state: 'Gujarat',
       travelDate: getFutureDate(38),
       pax: 2,
       packageId: 'goa-3n4d',
@@ -663,10 +670,10 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
     });
 
     assert.strictEqual(res.statusCode, 201);
-    assert.strictEqual(res.body.booking.specialRequests, sanitizedExpected);
+    assert.strictEqual(res.body.booking.specialRequests, specialText);
 
     const saved = await getBookingById(res.body.bookingId);
-    assert.strictEqual(saved.specialRequests, sanitizedExpected);
+    assert.strictEqual(saved.specialRequests, specialText);
   });
 
   // 27. Booking and contact API success/failure behavior
@@ -706,4 +713,320 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
     });
     assert.strictEqual(contactBad.statusCode, 400);
   });
+
+  // 28. Strict PAX validation: rejects malformed numeric strings
+  await t.test('28. Strict PAX validation rejects malformed values (2abc, 1.5, negative)', async () => {
+    for (const badPax of ['2abc', '1.5', 'pax2', -1, 0, 25]) {
+      const res = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+        name: 'Bad Pax User',
+        email: 'badpax@example.com',
+        phone: '9876543210',
+        travelDate: getFutureDate(15),
+        pax: badPax,
+        packageId: 'goa-3n4d'
+      });
+      assert.strictEqual(res.statusCode, 400, `Expected 400 for pax: ${badPax}`);
+      assert.match(res.body.message, /pax must be an integer between 1 and 20/i);
+    }
+  });
+
+  // 29. Strict date validation: rejects impossible calendar dates and format errors
+  await t.test('29. Strict date validation rejects non-existent dates (2026-02-31) and malformed formats', async () => {
+    for (const badDate of ['2026-02-31', '2026-04-31', 'not-a-date', '2026/12/25', '12-05-2026']) {
+      const res = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+        name: 'Bad Date User',
+        email: 'baddate@example.com',
+        phone: '9876543210',
+        travelDate: badDate,
+        pax: 2,
+        packageId: 'goa-3n4d'
+      });
+      assert.strictEqual(res.statusCode, 400, `Expected 400 for travelDate: ${badDate}`);
+      assert.match(res.body.message, /YYYY-MM-DD|calendar/i);
+    }
+
+    // Boundary dates: tomorrow (allowed) vs today (rejected) vs day 60 (allowed) vs day 61 (rejected)
+    const resTomorrow = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Tomorrow Traveler',
+      email: 'tomorrow@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(1),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    assert.strictEqual(resTomorrow.statusCode, 201, 'Tomorrow booking must be allowed');
+
+    const resDay60 = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Day 60 Traveler',
+      email: 'day60@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(60),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    assert.strictEqual(resDay60.statusCode, 201, 'Day 60 booking must be allowed');
+
+    const resDay61 = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Day 61 Traveler',
+      email: 'day61@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(61),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    assert.strictEqual(resDay61.statusCode, 400, 'Day 61 booking must be rejected');
+  });
+
+  // 30. Indian State validation: accepts valid state, normalizes casing, rejects invalid
+  await t.test('30. Indian state validation rejects fake states and normalizes casing', async () => {
+    const resInvalidState = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Fake State User',
+      email: 'fakestate@example.com',
+      phone: '9876543210',
+      state: 'Atlantis State',
+      travelDate: getFutureDate(15),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    assert.strictEqual(resInvalidState.statusCode, 400);
+    assert.match(resInvalidState.body.message, /Invalid Indian state/i);
+
+    const resNormalized = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Normalized State User',
+      email: 'normalized@example.com',
+      phone: '9876543210',
+      state: 'karnataka',
+      travelDate: getFutureDate(15),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    assert.strictEqual(resNormalized.statusCode, 201);
+    assert.strictEqual(resNormalized.body.booking.state, 'Karnataka');
+  });
+
+  // 31. Server-side price authority: ignores client-submitted prices
+  await t.test('31. Server-side price authority overrides any client-submitted monetary values', async () => {
+    const resTampered = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Price Hacker',
+      email: 'hacker@example.com',
+      phone: '9876543210',
+      state: 'Gujarat',
+      travelDate: getFutureDate(20),
+      pax: 2,
+      packageId: 'goa-3n4d',
+      baseAmount: 1,      // Attempted client tamper
+      totalAmount: 1,     // Attempted client tamper
+      gstAmount: 0
+    });
+    assert.strictEqual(resTampered.statusCode, 201);
+    // Real base price is 9999 * 2 = 19998; total = 20997.9
+    assert.strictEqual(resTampered.body.booking.baseAmount, 19998);
+    assert.strictEqual(resTampered.body.booking.totalAmount, 20997.9);
+  });
+
+  // 32. Webhook rejects hex-encoded signature variants
+  await t.test('32. Webhook rejects hex-encoded signatures (exact Base64 required)', async () => {
+    const timestamp = Date.now();
+    const payload = { data: { order: { order_id: 'HEX_SIG_TEST' } } };
+    const rawBody = JSON.stringify(payload);
+    const signaturePayload = `${timestamp}${rawBody}`;
+
+    const hexSignature = crypto
+      .createHmac('sha256', process.env.CASHFREE_SECRET_KEY)
+      .update(signaturePayload)
+      .digest('hex'); // Hexadecimal signature variant
+
+    const res = await makeRequest(server, {
+      path: '/api/payments/webhook',
+      method: 'POST',
+      headers: {
+        'x-webhook-signature': hexSignature,
+        'x-webhook-timestamp': timestamp.toString()
+      }
+    }, null, Buffer.from(rawBody, 'utf-8'));
+
+    assert.strictEqual(res.statusCode, 401);
+    assert.match(res.body.message, /Invalid webhook signature/i);
+  });
+
+  // 33. Webhook rejects raw-body-only signatures (missing timestamp prefix)
+  await t.test('33. Webhook rejects raw-body-only signatures lacking timestamp in HMAC payload', async () => {
+    const timestamp = Date.now();
+    const payload = { data: { order: { order_id: 'RAW_ONLY_SIG_TEST' } } };
+    const rawBody = JSON.stringify(payload);
+
+    // Signature computed on rawBody alone without timestamp
+    const rawOnlySignature = crypto
+      .createHmac('sha256', process.env.CASHFREE_SECRET_KEY)
+      .update(rawBody)
+      .digest('base64');
+
+    const res = await makeRequest(server, {
+      path: '/api/payments/webhook',
+      method: 'POST',
+      headers: {
+        'x-webhook-signature': rawOnlySignature,
+        'x-webhook-timestamp': timestamp.toString()
+      }
+    }, null, Buffer.from(rawBody, 'utf-8'));
+
+    assert.strictEqual(res.statusCode, 401);
+    assert.match(res.body.message, /Invalid webhook signature/i);
+  });
+
+  // 34. Webhook rejects amount and currency mismatch
+  await t.test('34. Webhook rejects payment amount and currency mismatch and does not mark booking PAID', async () => {
+    // 1. Create booking
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Mismatch User',
+      email: 'mismatch@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(25),
+      pax: 1,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    // 2. Create order
+    const payRes = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    const orderId = payRes.body.orderId;
+    assert.ok(orderId);
+
+    // 3. Webhook with mismatched amount (provider reported 100 instead of 10498.95)
+    const timestamp = Date.now();
+    const payload = {
+      data: {
+        order: { order_id: orderId, order_amount: 100, order_currency: 'INR' },
+        payment: {
+          cf_payment_id: `cf_mismatch_${Date.now()}`,
+          payment_status: 'SUCCESS',
+          payment_amount: 100, // TAMPERED AMOUNT
+          payment_currency: 'INR'
+        }
+      },
+      type: 'PAYMENT_SUCCESS_WEBHOOK'
+    };
+    const rawBody = JSON.stringify(payload);
+    const signature = crypto
+      .createHmac('sha256', process.env.CASHFREE_SECRET_KEY)
+      .update(`${timestamp}${rawBody}`)
+      .digest('base64');
+
+    const hookRes = await makeRequest(server, {
+      path: '/api/payments/webhook',
+      method: 'POST',
+      headers: {
+        'x-webhook-signature': signature,
+        'x-webhook-timestamp': timestamp.toString()
+      }
+    }, null, Buffer.from(rawBody, 'utf-8'));
+
+    assert.strictEqual(hookRes.statusCode, 400);
+    assert.match(hookRes.body.message, /Provider amount or currency does not match/i);
+
+    // 4. Verify booking was NEVER marked PAID
+    const booking = await getBookingById(bookingId);
+    assert.strictEqual(booking.status, 'PENDING_PAYMENT');
+
+    const payment = await getPaymentByOrderId(orderId);
+    assert.strictEqual(payment.status, 'AMOUNT_MISMATCH');
+  });
+
+  // 35. Active order reuse: reuses existing pending order to prevent duplicate orders
+  await t.test('35. Repeated order creation reuses existing active pending order within 15 minutes', async () => {
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Reuse Order User',
+      email: 'reuse@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(28),
+      pax: 1,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    // First create-order call
+    const firstOrder = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    assert.strictEqual(firstOrder.statusCode, 200);
+    const orderId1 = firstOrder.body.orderId;
+
+    // Second create-order call (concurrent or repeated)
+    const secondOrder = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    assert.strictEqual(secondOrder.statusCode, 200);
+    const orderId2 = secondOrder.body.orderId;
+
+    // Must reuse the same order ID
+    assert.strictEqual(orderId1, orderId2, 'Subsequent order creation must reuse active pending order');
+  });
+
+  // 36. State machine protection: cannot pay cancelled or terminal bookings
+  await t.test('36. State machine prevents paying already cancelled or refunded bookings', async () => {
+    const { updateBookingStatus } = require('../src/utils/db');
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Cancelled User',
+      email: 'cancelled@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(35),
+      pax: 1,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    // Manually set booking to CANCELLED
+    await updateBookingStatus(bookingId, 'CANCELLED');
+
+    // Attempting to create order must fail
+    const payRes = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    assert.strictEqual(payRes.statusCode, 400);
+    assert.match(payRes.body.message, /Cannot initiate payment for booking in CANCELLED state/i);
+  });
+
+  // 37. Admin pagination support
+  await t.test('37. Admin endpoints support pagination with page and limit query params', async () => {
+    const resPaginated = await makeRequest(server, {
+      path: '/api/bookings?page=1&limit=5',
+      method: 'GET',
+      headers: { 'x-api-key': process.env.ADMIN_API_KEY }
+    });
+    assert.strictEqual(resPaginated.statusCode, 200);
+    assert.strictEqual(resPaginated.body.page, 1);
+    assert.strictEqual(resPaginated.body.limit, 5);
+    assert.ok(resPaginated.body.bookings.length <= 5);
+    assert.ok(typeof resPaginated.body.total === 'number');
+  });
+
+  // 38. Payment status query endpoint
+  await t.test('38. GET /api/payments/status/:orderId returns authoritative payment & booking status', async () => {
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Status Check User',
+      email: 'statuscheck@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(40),
+      pax: 1,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    const payRes = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    const orderId = payRes.body.orderId;
+
+    const statusRes = await makeRequest(server, {
+      path: `/api/payments/status/${orderId}`,
+      method: 'GET'
+    });
+    assert.strictEqual(statusRes.statusCode, 200);
+    assert.strictEqual(statusRes.body.orderId, orderId);
+    assert.strictEqual(statusRes.body.paymentStatus, 'PENDING');
+    assert.strictEqual(statusRes.body.bookingStatus, 'PENDING_PAYMENT');
+  });
 });
+

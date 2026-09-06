@@ -1,4 +1,7 @@
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 let pool = null;
 let isReady = false;
@@ -8,8 +11,52 @@ let initPromise = null;
 const memStore = {
   bookings: new Map(),
   payments: new Map(),
-  contacts: new Map()
+  contacts: new Map(),
+  processedWebhookEvents: new Map(),
+  notificationLogs: new Map()
 };
+
+/**
+ * Executes versioned SQL migrations located in backend/src/migrations/
+ */
+async function runMigrations(client) {
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version VARCHAR(100) PRIMARY KEY,
+      applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const { rows } = await client.query('SELECT version FROM schema_migrations;');
+  const applied = new Set(rows.map(r => r.version));
+
+  const migrationsDir = path.join(__dirname, '../migrations');
+  if (!fs.existsSync(migrationsDir)) {
+    return;
+  }
+
+  const migrationFiles = fs.readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
+
+  for (const file of migrationFiles) {
+    if (!applied.has(file)) {
+      console.log(`[DB Migration] Applying ${file}...`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      await client.query('BEGIN');
+      try {
+        await client.query(sql);
+        await client.query('INSERT INTO schema_migrations (version) VALUES ($1);', [file]);
+        await client.query('COMMIT');
+        console.log(`[DB Migration] Applied ${file} successfully.`);
+      } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(`[DB Migration Error] Failed applying ${file}:`, err.message);
+        throw err;
+      }
+    }
+  }
+}
 
 /**
  * Establish datastore readiness before accepting booking traffic.
@@ -25,7 +72,6 @@ async function initDatabase() {
     }
 
     if (process.env.DATABASE_URL) {
-      // In production, enforce TLS certificate verification unless explicitly disabled
       const rejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'false'
         ? false
         : (process.env.NODE_ENV === 'production');
@@ -37,61 +83,10 @@ async function initDatabase() {
 
       const client = await pool.connect();
       try {
-        await client.query('BEGIN');
-        await client.query(`
-          CREATE TABLE IF NOT EXISTS bookings (
-            id VARCHAR(64) PRIMARY KEY,
-            package_id VARCHAR(100) NOT NULL,
-            package_name VARCHAR(255) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            phone VARCHAR(50) NOT NULL,
-            travel_date VARCHAR(50) NOT NULL,
-            pax INT DEFAULT 1,
-            special_requests TEXT,
-            base_amount NUMERIC NOT NULL,
-            gst_amount NUMERIC NOT NULL,
-            gst_rate NUMERIC NOT NULL,
-            total_amount NUMERIC NOT NULL,
-            tax_details JSONB,
-            customer_state VARCHAR(100),
-            office_state VARCHAR(100),
-            invoice_date VARCHAR(50),
-            status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-
-          CREATE TABLE IF NOT EXISTS payments (
-            id VARCHAR(64) PRIMARY KEY,
-            booking_id VARCHAR(64) REFERENCES bookings(id) ON DELETE CASCADE,
-            cf_order_id VARCHAR(100) UNIQUE NOT NULL,
-            payment_session_id VARCHAR(255),
-            amount NUMERIC NOT NULL,
-            currency VARCHAR(10) DEFAULT 'INR',
-            status VARCHAR(50) DEFAULT 'PENDING',
-            cf_payment_id VARCHAR(100),
-            payment_method VARCHAR(50),
-            raw_payload JSONB,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-
-          CREATE TABLE IF NOT EXISTS contacts (
-            id VARCHAR(64) PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            phone VARCHAR(50) NOT NULL,
-            destination VARCHAR(255),
-            message TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-        `);
-        await client.query('COMMIT');
+        await runMigrations(client);
         isReady = true;
-        console.log('✅ PostgreSQL database schemas verified and ready.');
+        console.log('✅ PostgreSQL database migrations verified and ready.');
       } catch (err) {
-        await client.query('ROLLBACK');
         isReady = false;
         throw err;
       } finally {
@@ -131,6 +126,24 @@ function checkReady() {
   }
 }
 
+/**
+ * Sanitize payment payload to retain only necessary audit fields and redact sensitive financial PII
+ */
+function sanitizePaymentPayload(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const orderData = raw.data?.order || raw.order || {};
+  const paymentData = raw.data?.payment || raw.payment || {};
+  return {
+    order_id: orderData.order_id || raw.order_id || null,
+    cf_payment_id: paymentData.cf_payment_id || raw.cf_payment_id || null,
+    payment_status: paymentData.payment_status || raw.type || null,
+    payment_amount: paymentData.payment_amount ?? orderData.order_amount ?? null,
+    payment_currency: paymentData.payment_currency ?? orderData.order_currency ?? 'INR',
+    payment_method: paymentData.payment_method?.type || (typeof paymentData.payment_method === 'string' ? paymentData.payment_method : null),
+    event_time: raw.event_time || new Date().toISOString()
+  };
+}
+
 async function saveBooking(booking) {
   checkReady();
 
@@ -157,9 +170,9 @@ async function saveBooking(booking) {
       booking.gstAmount,
       booking.gstRate,
       booking.totalAmount,
-      JSON.stringify(booking.taxDetails || {}),
-      booking.customerState,
-      booking.officeState,
+      booking.taxDetails ? JSON.stringify(booking.taxDetails) : null,
+      booking.customerState || 'Gujarat',
+      booking.officeState || 'Gujarat',
       booking.invoiceDate,
       booking.status || 'PENDING_PAYMENT'
     ];
@@ -167,73 +180,69 @@ async function saveBooking(booking) {
     return res.rows[0];
   }
 
-  // In-memory fallback for unit testing
   memStore.bookings.set(booking.id, { ...booking, createdAt: new Date().toISOString() });
   return booking;
 }
 
-async function getBookingById(id) {
+async function getBookingById(bookingId) {
   checkReady();
 
   if (pool) {
-    const res = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
-    if (!res.rows[0]) return null;
-    const row = res.rows[0];
-    return {
-      id: row.id,
-      packageId: row.package_id,
-      packageName: row.package_name,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      travelDate: row.travel_date,
-      pax: row.pax,
-      specialRequests: row.special_requests,
-      baseAmount: parseFloat(row.base_amount),
-      gstAmount: parseFloat(row.gst_amount),
-      gstRate: parseFloat(row.gst_rate),
-      totalAmount: parseFloat(row.total_amount),
-      taxDetails: row.tax_details,
-      customerState: row.customer_state,
-      officeState: row.office_state,
-      invoiceDate: row.invoice_date,
-      status: row.status,
-      createdAt: row.created_at
-    };
+    const res = await pool.query('SELECT * FROM bookings WHERE id = $1', [bookingId]);
+    return res.rows[0] || null;
   }
 
-  return memStore.bookings.get(id) || null;
+  return memStore.bookings.get(bookingId) || null;
 }
 
-async function getBookings() {
+async function getBookings(options = {}) {
   checkReady();
 
+  const page = Math.max(1, parseInt(options.page, 10) || 1);
+  const limit = Math.min(Math.max(1, parseInt(options.limit, 10) || 20), 100);
+  const offset = (page - 1) * limit;
+  const statusFilter = options.status ? String(options.status).trim() : null;
+
   if (pool) {
-    const res = await pool.query('SELECT * FROM bookings ORDER BY created_at DESC');
-    return res.rows.map(row => ({
-      id: row.id,
-      packageId: row.package_id,
-      packageName: row.package_name,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      travelDate: row.travel_date,
-      pax: row.pax,
-      specialRequests: row.special_requests,
-      baseAmount: parseFloat(row.base_amount),
-      gstAmount: parseFloat(row.gst_amount),
-      gstRate: parseFloat(row.gst_rate),
-      totalAmount: parseFloat(row.total_amount),
-      taxDetails: row.tax_details,
-      customerState: row.customer_state,
-      officeState: row.office_state,
-      invoiceDate: row.invoice_date,
-      status: row.status,
-      createdAt: row.created_at
-    }));
+    let countQuery = 'SELECT COUNT(*) FROM bookings';
+    let query = 'SELECT * FROM bookings';
+    const params = [];
+    const countParams = [];
+
+    if (statusFilter) {
+      countQuery += ' WHERE status = $1';
+      countParams.push(statusFilter);
+      query += ' WHERE status = $1';
+      params.push(statusFilter);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+    params.push(limit, offset);
+
+    const [countRes, rowsRes] = await Promise.all([
+      pool.query(countQuery, countParams),
+      pool.query(query, params)
+    ]);
+
+    const total = parseInt(countRes.rows[0].count, 10);
+    const totalPages = Math.ceil(total / limit);
+
+    // Attach pagination metadata directly to the array for backward compatibility
+    const items = rowsRes.rows;
+    items.pagination = { total, page, limit, totalPages };
+    return items;
   }
 
-  return Array.from(memStore.bookings.values()).reverse();
+  let all = Array.from(memStore.bookings.values()).reverse();
+  if (statusFilter) {
+    all = all.filter(b => b.status === statusFilter);
+  }
+
+  const total = all.length;
+  const totalPages = Math.ceil(total / limit);
+  const items = all.slice(offset, offset + limit);
+  items.pagination = { total, page, limit, totalPages };
+  return items;
 }
 
 async function updateBookingStatus(bookingId, status) {
@@ -260,6 +269,8 @@ async function updateBookingStatus(bookingId, status) {
 async function savePayment(payment) {
   checkReady();
 
+  const sanitized = sanitizePaymentPayload(payment.rawPayload);
+
   if (pool) {
     const query = `
       INSERT INTO payments (
@@ -277,13 +288,17 @@ async function savePayment(payment) {
       payment.status || 'PENDING',
       payment.cfPaymentId || null,
       payment.paymentMethod || null,
-      payment.rawPayload ? JSON.stringify(payment.rawPayload) : null
+      sanitized ? JSON.stringify(sanitized) : null
     ];
     const res = await pool.query(query, values);
     return res.rows[0];
   }
 
-  memStore.payments.set(payment.cfOrderId, { ...payment, createdAt: new Date().toISOString() });
+  memStore.payments.set(payment.cfOrderId, {
+    ...payment,
+    rawPayload: sanitized,
+    createdAt: new Date().toISOString()
+  });
   return payment;
 }
 
@@ -298,8 +313,39 @@ async function getPaymentByOrderId(orderId) {
   return memStore.payments.get(orderId) || null;
 }
 
+/**
+ * Finds an active pending payment order for a booking to prevent concurrent duplicate orders
+ */
+async function getActivePaymentByBookingId(bookingId) {
+  checkReady();
+
+  if (pool) {
+    const res = await pool.query(
+      `SELECT * FROM payments 
+       WHERE booking_id = $1 AND status = 'PENDING' AND created_at > NOW() - INTERVAL '15 minutes'
+       ORDER BY created_at DESC LIMIT 1`,
+      [bookingId]
+    );
+    return res.rows[0] || null;
+  }
+
+  const active = Array.from(memStore.payments.values())
+    .filter(p => p.bookingId === bookingId && p.status === 'PENDING')
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+  if (active) {
+    const ageMs = Date.now() - new Date(active.createdAt).getTime();
+    if (ageMs < 15 * 60 * 1000) {
+      return active;
+    }
+  }
+  return null;
+}
+
 async function updatePaymentStatus(cfOrderId, status, cfPaymentId = null, paymentMethod = null, rawPayload = null) {
   checkReady();
+
+  const sanitized = sanitizePaymentPayload(rawPayload);
 
   if (pool) {
     const res = await pool.query(
@@ -309,7 +355,7 @@ async function updatePaymentStatus(cfOrderId, status, cfPaymentId = null, paymen
            updated_at = CURRENT_TIMESTAMP 
        WHERE cf_order_id = $5 
        RETURNING *;`,
-      [status, cfPaymentId, paymentMethod, rawPayload ? JSON.stringify(rawPayload) : null, cfOrderId]
+      [status, cfPaymentId, paymentMethod, sanitized ? JSON.stringify(sanitized) : null, cfOrderId]
     );
     return res.rows[0] || null;
   }
@@ -319,12 +365,79 @@ async function updatePaymentStatus(cfOrderId, status, cfPaymentId = null, paymen
     payment.status = status;
     if (cfPaymentId) payment.cfPaymentId = cfPaymentId;
     if (paymentMethod) payment.paymentMethod = paymentMethod;
-    if (rawPayload) payment.rawPayload = rawPayload;
+    if (sanitized) payment.rawPayload = sanitized;
     payment.updatedAt = new Date().toISOString();
     memStore.payments.set(cfOrderId, payment);
     return payment;
   }
   return null;
+}
+
+/**
+ * Webhook Event Deduplication Helpers
+ */
+async function isWebhookEventProcessed(eventId) {
+  checkReady();
+  if (!eventId) return false;
+
+  if (pool) {
+    const res = await pool.query('SELECT 1 FROM processed_webhook_events WHERE event_id = $1', [eventId]);
+    return res.rows.length > 0;
+  }
+
+  return memStore.processedWebhookEvents.has(eventId);
+}
+
+async function recordProcessedWebhookEvent(eventId, eventType, orderId, cfPaymentId, status) {
+  checkReady();
+  if (!eventId) return;
+
+  if (pool) {
+    await pool.query(
+      `INSERT INTO processed_webhook_events (event_id, event_type, order_id, cf_payment_id, status)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (event_id) DO NOTHING`,
+      [eventId, eventType, orderId, cfPaymentId, status]
+    );
+    return;
+  }
+
+  memStore.processedWebhookEvents.set(eventId, {
+    eventId,
+    eventType,
+    orderId,
+    cfPaymentId,
+    status,
+    processedAt: new Date().toISOString()
+  });
+}
+
+/**
+ * Notification Outbox Logging Helpers
+ */
+async function recordNotificationLog({ referenceId, notificationType, recipient, status, errorMessage }) {
+  checkReady();
+  const id = `NOTIF_${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+
+  if (pool) {
+    await pool.query(
+      `INSERT INTO notification_logs (id, reference_id, notification_type, recipient, status, error_message)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, referenceId, notificationType, recipient, status, errorMessage || null]
+    );
+    return id;
+  }
+
+  memStore.notificationLogs.set(id, {
+    id,
+    referenceId,
+    notificationType,
+    recipient,
+    status,
+    errorMessage: errorMessage || null,
+    createdAt: new Date().toISOString()
+  });
+  return id;
 }
 
 async function saveContact(contact) {
@@ -342,21 +455,39 @@ async function saveContact(contact) {
   return contact;
 }
 
-async function getContacts() {
+async function getContacts(options = {}) {
   checkReady();
 
+  const page = Math.max(1, parseInt(options.page, 10) || 1);
+  const limit = Math.min(Math.max(1, parseInt(options.limit, 10) || 20), 100);
+  const offset = (page - 1) * limit;
+
   if (pool) {
-    const res = await pool.query('SELECT * FROM contacts ORDER BY created_at DESC');
-    return res.rows;
+    const [countRes, rowsRes] = await Promise.all([
+      pool.query('SELECT COUNT(*) FROM contacts'),
+      pool.query('SELECT * FROM contacts ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset])
+    ]);
+    const total = parseInt(countRes.rows[0].count, 10);
+    const totalPages = Math.ceil(total / limit);
+    const items = rowsRes.rows;
+    items.pagination = { total, page, limit, totalPages };
+    return items;
   }
 
-  return Array.from(memStore.contacts.values()).reverse();
+  const all = Array.from(memStore.contacts.values()).reverse();
+  const total = all.length;
+  const totalPages = Math.ceil(total / limit);
+  const items = all.slice(offset, offset + limit);
+  items.pagination = { total, page, limit, totalPages };
+  return items;
 }
 
 function clearMemoryStoreForTesting() {
   memStore.bookings.clear();
   memStore.payments.clear();
   memStore.contacts.clear();
+  memStore.processedWebhookEvents.clear();
+  memStore.notificationLogs.clear();
 }
 
 module.exports = {
@@ -367,7 +498,11 @@ module.exports = {
   updateBookingStatus,
   savePayment,
   getPaymentByOrderId,
+  getActivePaymentByBookingId,
   updatePaymentStatus,
+  isWebhookEventProcessed,
+  recordProcessedWebhookEvent,
+  recordNotificationLog,
   saveContact,
   getContacts,
   clearMemoryStoreForTesting,

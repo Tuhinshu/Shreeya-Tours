@@ -1,0 +1,53 @@
+-- Migration 001: Initial Schema for Shreeya Tours
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version VARCHAR(100) PRIMARY KEY,
+  applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bookings (
+  id VARCHAR(64) PRIMARY KEY,
+  package_id VARCHAR(100) NOT NULL,
+  package_name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  travel_date VARCHAR(50) NOT NULL,
+  pax INT DEFAULT 1,
+  special_requests TEXT,
+  base_amount NUMERIC NOT NULL,
+  gst_amount NUMERIC NOT NULL,
+  gst_rate NUMERIC NOT NULL,
+  total_amount NUMERIC NOT NULL,
+  tax_details JSONB,
+  customer_state VARCHAR(100),
+  office_state VARCHAR(100),
+  invoice_date VARCHAR(50),
+  status VARCHAR(50) DEFAULT 'PENDING_PAYMENT',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id VARCHAR(64) PRIMARY KEY,
+  booking_id VARCHAR(64) REFERENCES bookings(id) ON DELETE CASCADE,
+  cf_order_id VARCHAR(100) UNIQUE NOT NULL,
+  payment_session_id VARCHAR(255),
+  amount NUMERIC NOT NULL,
+  currency VARCHAR(10) DEFAULT 'INR',
+  status VARCHAR(50) DEFAULT 'PENDING',
+  cf_payment_id VARCHAR(100),
+  payment_method VARCHAR(50),
+  raw_payload JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS contacts (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  destination VARCHAR(255),
+  message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

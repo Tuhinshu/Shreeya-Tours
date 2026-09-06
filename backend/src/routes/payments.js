@@ -2,7 +2,16 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const crypto = require('crypto');
-const { getBookingById, updateBookingStatus, savePayment, getPaymentByOrderId, updatePaymentStatus } = require('../utils/db');
+const {
+  getBookingById,
+  updateBookingStatus,
+  savePayment,
+  getPaymentByOrderId,
+  getActivePaymentByBookingId,
+  updatePaymentStatus,
+  isWebhookEventProcessed,
+  recordProcessedWebhookEvent
+} = require('../utils/db');
 
 // CashFree API Configs
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
@@ -16,7 +25,7 @@ const CASHFREE_BASE_URL = CASHFREE_ENV === 'production'
 /**
  * Endpoint: POST /api/payments/create-order
  * Description: Initiates a payment session using authoritative server-side pricing from the booking record.
- * Never accepts price, total amount, or order ID from the client.
+ * Prevents concurrent duplicate orders for the same booking and generates opaque customer IDs.
  */
 router.post('/create-order', async (req, res, next) => {
   try {
@@ -45,10 +54,34 @@ router.post('/create-order', async (req, res, next) => {
       });
     }
 
+    if (booking.status === 'CANCELLED' || booking.status === 'REFUNDED') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot initiate payment for booking in ${booking.status} state.`
+      });
+    }
+
+    // Check for existing active pending payment order to prevent duplicate active orders
+    const existingActivePayment = await getActivePaymentByBookingId(bookingId);
+    if (existingActivePayment && existingActivePayment.paymentSessionId) {
+      console.info(`[Payment Order Reused] Active order ${existingActivePayment.cfOrderId} reused for booking ${bookingId}`);
+      return res.status(200).json({
+        success: true,
+        mode: existingActivePayment.paymentSessionId.startsWith('mock_') ? 'MOCK' : 'LIVE',
+        paymentSessionId: existingActivePayment.paymentSessionId,
+        orderId: existingActivePayment.cfOrderId,
+        amount: Number(existingActivePayment.amount),
+        currency: existingActivePayment.currency || 'INR'
+      });
+    }
+
     // Generate secure server-side order ID (never trust client orderId)
     const serverOrderId = `CF_${Date.now()}_${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
     const paymentId = `PAY_${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
     const authoritativeAmount = booking.totalAmount;
+
+    // Generate opaque customer ID (never expose raw customer phone in provider identifier)
+    const opaqueCustomerId = `cust_${crypto.createHash('sha256').update(booking.id + (booking.email || '')).digest('hex').slice(0, 16)}`;
 
     // Handle missing production credentials
     if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
@@ -92,7 +125,7 @@ router.post('/create-order', async (req, res, next) => {
         order_amount: authoritativeAmount,
         order_currency: 'INR',
         customer_details: {
-          customer_id: `cust_${booking.phone.replace(/[^0-9]/g, '')}`,
+          customer_id: opaqueCustomerId,
           customer_name: booking.name,
           customer_email: booking.email,
           customer_phone: booking.phone
@@ -140,7 +173,8 @@ router.post('/create-order', async (req, res, next) => {
 
 /**
  * Endpoint: POST /api/payments/webhook
- * Description: CashFree webhook with signature verification, replay protection, and booking state transitions.
+ * Description: CashFree webhook with exact signature verification, replay protection,
+ * amount/currency reconciliation, durable event deduplication, and booking state machine.
  */
 router.post('/webhook', async (req, res) => {
   const secretKey = process.env.CASHFREE_SECRET_KEY;
@@ -186,7 +220,7 @@ router.post('/webhook', async (req, res) => {
     });
   }
 
-  // HMAC-SHA256 Signature Verification
+  // Exact HMAC-SHA256 Base64 Signature Verification Scheme
   try {
     const rawBody = req.rawBody ? req.rawBody.toString('utf-8') : JSON.stringify(req.body);
     const signaturePayload = `${timestamp}${rawBody}`;
@@ -196,31 +230,13 @@ router.post('/webhook', async (req, res) => {
       .update(signaturePayload)
       .digest('base64');
 
-    const expectedSignatureHex = crypto
-      .createHmac('sha256', secretKey)
-      .update(signaturePayload)
-      .digest('hex');
+    const sigBuf = Buffer.from(String(signature), 'utf8');
+    const expectedBuf = Buffer.from(expectedSignatureBase64, 'utf8');
 
-    // Also support rawBody-only signature scheme
-    const rawExpectedBase64 = crypto
-      .createHmac('sha256', secretKey)
-      .update(rawBody)
-      .digest('base64');
-
-    const rawExpectedHex = crypto
-      .createHmac('sha256', secretKey)
-      .update(rawBody)
-      .digest('hex');
-
-    const isValid = (
-      signature === expectedSignatureBase64 ||
-      signature === expectedSignatureHex ||
-      signature === rawExpectedBase64 ||
-      signature === rawExpectedHex
-    );
+    const isValid = (sigBuf.length === expectedBuf.length) && crypto.timingSafeEqual(sigBuf, expectedBuf);
 
     if (!isValid) {
-      console.warn('[Webhook Invalid Signature] Verification failed for signature payload.');
+      console.warn('[Webhook Invalid Signature] Exact Base64 signature verification failed.');
       return res.status(401).json({
         success: false,
         message: 'Unauthorized: Invalid webhook signature'
@@ -234,7 +250,7 @@ router.post('/webhook', async (req, res) => {
     });
   }
 
-  // Authoritative State Transition & Reconciliation
+  // Authoritative State Transition & Amount Reconciliation
   try {
     const payload = req.body || {};
     const orderData = payload.data?.order || payload.order || {};
@@ -244,41 +260,84 @@ router.post('/webhook', async (req, res) => {
     const paymentStatus = paymentData.payment_status || payload.type || 'UNKNOWN';
     const cfPaymentId = paymentData.cf_payment_id || payload.cf_payment_id || null;
     const paymentMethod = paymentData.payment_method ? JSON.stringify(paymentData.payment_method) : null;
+    const upperStatus = String(paymentStatus).toUpperCase();
 
     if (!orderId) {
       console.warn('[Webhook Notice] No order_id found in webhook payload');
       return res.status(200).json({ status: 'IGNORED_NO_ORDER_ID' });
     }
 
+    // Durable Event-Level Deduplication
+    const eventId = payload.event_id || cfPaymentId || (orderId + '_' + upperStatus);
+    const alreadyProcessed = await isWebhookEventProcessed(eventId);
+    if (alreadyProcessed) {
+      console.info(`[Webhook Deduplication] Event ${eventId} already processed.`);
+      return res.status(200).json({ status: 'ALREADY_PROCESSED', eventId });
+    }
+
     const paymentRecord = await getPaymentByOrderId(orderId);
+    if (!paymentRecord) {
+      console.warn(`[Webhook Notice] Order not found in database: ${orderId}`);
+      return res.status(404).json({ success: false, message: `Payment order not found: ${orderId}` });
+    }
 
     // Map CashFree status to internal states
     let newBookingStatus = null;
     let paymentDbStatus = 'PENDING';
 
-    const upperStatus = String(paymentStatus).toUpperCase();
-    if (upperStatus === 'SUCCESS' || upperStatus === 'PAYMENT_SUCCESS') {
+    const isSuccess = (upperStatus === 'SUCCESS' || upperStatus === 'PAYMENT_SUCCESS');
+    const isFailure = (upperStatus === 'FAILED' || upperStatus === 'PAYMENT_FAILED' || upperStatus === 'USER_DROPPED' || upperStatus === 'CANCELLED');
+
+    if (isSuccess) {
+      // Amount & Currency Verification: compare provider reported amount vs recorded amount
+      const providerAmount = Number(paymentData.payment_amount ?? orderData.order_amount);
+      const providerCurrency = String(paymentData.payment_currency ?? orderData.order_currency ?? 'INR').toUpperCase();
+      const recordedAmount = Number(paymentRecord.amount);
+      const recordedCurrency = String(paymentRecord.currency || 'INR').toUpperCase();
+
+      if (isNaN(providerAmount) || Math.abs(providerAmount - recordedAmount) > 0.05 || providerCurrency !== recordedCurrency) {
+        console.error(`[Webhook Amount Mismatch] Order ${orderId}: Expected ₹${recordedAmount} ${recordedCurrency}, provider reported ₹${providerAmount} ${providerCurrency}`);
+        await updatePaymentStatus(orderId, 'AMOUNT_MISMATCH', cfPaymentId, paymentMethod, payload);
+        await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT_SUCCESS', orderId, cfPaymentId, 'AMOUNT_MISMATCH');
+        return res.status(400).json({
+          success: false,
+          message: 'Payment rejected: Provider amount or currency does not match internal record.'
+        });
+      }
+
       paymentDbStatus = 'SUCCESS';
       newBookingStatus = 'PAID';
-    } else if (upperStatus === 'FAILED' || upperStatus === 'PAYMENT_FAILED' || upperStatus === 'USER_DROPPED' || upperStatus === 'CANCELLED') {
+    } else if (isFailure) {
       paymentDbStatus = 'FAILED';
       newBookingStatus = 'PAYMENT_FAILED';
     }
 
-    // Idempotency check: if payment already resolved to final state, do not repeat side effects
-    if (paymentRecord && (paymentRecord.status === 'SUCCESS' || paymentRecord.status === 'PAID')) {
-      console.info(`[Webhook Idempotent] Order ${orderId} already processed as PAID.`);
+    // Check existing payment status idempotency & terminal protection
+    if (paymentRecord.status === 'SUCCESS') {
+      console.info(`[Webhook Idempotent] Order ${orderId} is already resolved to SUCCESS.`);
+      await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT', orderId, cfPaymentId, 'SUCCESS');
       return res.status(200).json({ status: 'ALREADY_PROCESSED' });
     }
 
-    // Update payment record in database
+    // Update payment record in database with sanitized payload
     await updatePaymentStatus(orderId, paymentDbStatus, cfPaymentId, paymentMethod, payload);
 
-    // Update associated booking state if linked
-    if (paymentRecord && paymentRecord.bookingId && newBookingStatus) {
-      await updateBookingStatus(paymentRecord.bookingId, newBookingStatus);
-      console.info(`[Booking State Transition] Booking: ${paymentRecord.bookingId} ➔ ${newBookingStatus} (Order: ${orderId})`);
+    // Enforce Booking State Machine: Only transition eligible booking states
+    if (paymentRecord.bookingId && newBookingStatus) {
+      const booking = await getBookingById(paymentRecord.bookingId);
+      if (booking) {
+        const eligibleStates = ['PENDING_PAYMENT', 'PAYMENT_FAILED'];
+        if (eligibleStates.includes(booking.status)) {
+          await updateBookingStatus(paymentRecord.bookingId, newBookingStatus);
+          console.info(`[Booking State Transition] Booking: ${paymentRecord.bookingId} (${booking.status}) ➔ ${newBookingStatus} (Order: ${orderId})`);
+        } else {
+          console.warn(`[Booking State Protected] Booking ${booking.id} is in terminal state '${booking.status}'; status transition to '${newBookingStatus}' ignored.`);
+        }
+      }
     }
+
+    // Record durable event completion
+    await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT', orderId, cfPaymentId, paymentDbStatus);
 
     return res.status(200).json({
       status: 'ACKNOWLEDGED',
@@ -294,5 +353,74 @@ router.post('/webhook', async (req, res) => {
     });
   }
 });
+
+/**
+ * Endpoint: GET /api/payments/status/:orderId
+ * Description: Retrieves authoritative status of a payment order and associated booking.
+ */
+router.get('/status/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'orderId parameter is required' });
+    }
+
+    const payment = await getPaymentByOrderId(orderId);
+    if (!payment) {
+      return res.status(404).json({ success: false, message: `Payment order not found: ${orderId}` });
+    }
+
+    const booking = payment.bookingId ? await getBookingById(payment.bookingId) : null;
+
+    return res.status(200).json({
+      success: true,
+      orderId: payment.cfOrderId,
+      amount: Number(payment.amount),
+      currency: payment.currency || 'INR',
+      paymentStatus: payment.status,
+      bookingStatus: booking ? booking.status : null,
+      bookingId: payment.bookingId
+    });
+  } catch (err) {
+    console.error('[Payment Status Check Error]', err.message);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve payment status' });
+  }
+});
+
+/**
+ * Endpoint: POST /api/payments/mock-complete (development/test only)
+ * Description: Simulates provider payment confirmation in dev/test environments.
+ */
+if (process.env.NODE_ENV !== 'production') {
+  router.post('/mock-complete', async (req, res) => {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ success: false, message: 'orderId is required' });
+      }
+
+      const payment = await getPaymentByOrderId(orderId);
+      if (!payment) {
+        return res.status(404).json({ success: false, message: `Payment order not found: ${orderId}` });
+      }
+
+      await updatePaymentStatus(orderId, 'SUCCESS', `mock_cf_${Date.now()}`, JSON.stringify({ method: 'MOCK_UPI' }), { simulated: true });
+      if (payment.bookingId) {
+        await updateBookingStatus(payment.bookingId, 'PAID');
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Mock payment marked as SUCCESS',
+        orderId,
+        paymentStatus: 'SUCCESS',
+        bookingStatus: 'PAID'
+      });
+    } catch (err) {
+      console.error('[Mock Complete Error]', err.message);
+      return res.status(500).json({ success: false, message: 'Failed to complete mock payment' });
+    }
+  });
+}
 
 module.exports = router;

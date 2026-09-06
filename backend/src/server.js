@@ -3,10 +3,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-const { initDatabase } = require('./utils/db');
+const { initDatabase, isDatabaseConnected } = require('./utils/db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Reverse Proxy Awareness: trust first proxy hop in production (e.g. AWS ELB, Render, Cloudflare, Vercel)
+const trustProxySetting = process.env.TRUST_PROXY
+  ? (process.env.TRUST_PROXY === 'true' ? true : (Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY))
+  : (process.env.NODE_ENV === 'production' ? 1 : false);
+app.set('trust proxy', trustProxySetting);
 
 // Enforce required security credentials in production
 if (process.env.NODE_ENV === 'production') {
@@ -27,9 +33,23 @@ if (process.env.NODE_ENV === 'production') {
 // Security HTTP headers
 app.use(helmet());
 
-// Enable CORS for frontend accessibility
+// Production CORS: fail closed in production without localhost fallback
+const allowedOrigins = [];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+}
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000');
+}
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow non-browser requests (mobile apps, server-to-server, curl) or matched origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS policy: Origin not allowed.'));
+  },
   credentials: true
 }));
 
@@ -56,12 +76,24 @@ app.use(express.json({
   }
 }));
 
-// Health Check Route
+// Enhanced Health Check Route with component status
 app.get('/api/health', (req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const paymentsConfigured = Boolean(process.env.CASHFREE_APP_ID && process.env.CASHFREE_SECRET_KEY);
+  const emailConfigured = Boolean(process.env.SENDGRID_API_KEY);
+  const watiConfigured = Boolean(process.env.WATI_API_URL && process.env.WATI_ACCESS_TOKEN);
+
   res.status(200).json({
     status: 'OK',
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    services: {
+      database: isDatabaseConnected() ? 'CONNECTED' : (isProd ? 'CONNECTED' : 'IN_MEMORY_READY'),
+      payments: paymentsConfigured ? 'READY' : (isProd ? 'MISSING_CREDENTIALS' : 'MOCK_READY'),
+      emailNotifications: emailConfigured ? 'READY' : (isProd ? 'MISSING_KEY' : 'MOCK_READY'),
+      whatsappNotifications: watiConfigured ? 'READY' : (isProd ? 'MISSING_CONFIG' : 'MOCK_READY')
+    }
   });
 });
 
@@ -113,4 +145,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-

@@ -4,7 +4,15 @@ const axios = require('axios');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { getPackageById, calculatePackageQuote } = require('../data/packages');
-const { saveBooking, getBookings, getBookingById, saveContact, getContacts } = require('../utils/db');
+const { INDIAN_STATES, normalizeIndianState } = require('../data/indianStates');
+const {
+  saveBooking,
+  getBookings,
+  getBookingById,
+  saveContact,
+  getContacts,
+  recordNotificationLog
+} = require('../utils/db');
 const { escapeHtml } = require('../utils/escapeHtml');
 
 // Env configs for SendGrid and WATI
@@ -67,11 +75,17 @@ function requireAdminAuth(req, res, next) {
 }
 
 /**
- * Helper: Sends SendGrid Transactional Email with HTML-escaped fields
+ * Helper: Sends SendGrid Transactional Email with output HTML-escaped fields
  */
 async function sendTransactionalEmail(booking) {
   if (!SENDGRID_API_KEY) {
     console.log(`✉️ [Mock SendGrid] Transactional email queued for booking: ${booking.id}`);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'EMAIL',
+      recipient: booking.email,
+      status: 'QUEUED_MOCK'
+    });
     return;
   }
 
@@ -81,6 +95,7 @@ async function sendTransactionalEmail(booking) {
   const safeState = escapeHtml(booking.customerState);
   const safePhone = escapeHtml(booking.phone);
   const safeInvoiceDate = escapeHtml(booking.invoiceDate);
+  const safeSpecialRequests = booking.specialRequests ? escapeHtml(booking.specialRequests) : 'None';
 
   try {
     await axios.post(
@@ -101,6 +116,7 @@ async function sendTransactionalEmail(booking) {
                 <li>Base Amount: ₹${booking.baseAmount.toLocaleString('en-IN')}</li>
                 <li>GST Calculated: ₹${booking.gstAmount.toLocaleString('en-IN')} (Rate: ${booking.gstRate}%)</li>
                 <li><strong>Grand Total: ₹${booking.totalAmount.toLocaleString('en-IN')}</strong></li>
+                <li>Special Notes: ${safeSpecialRequests}</li>
               </ul>
               <p>Billing State: ${safeState} | Invoice Date: ${safeInvoiceDate}</p>
               <p>We will contact you shortly on ${safePhone} to finalize the arrangements.</p>
@@ -116,8 +132,22 @@ async function sendTransactionalEmail(booking) {
       }
     );
     console.log(`✉️ Live SendGrid email dispatched for booking ${booking.id}`);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'EMAIL',
+      recipient: booking.email,
+      status: 'SENT'
+    });
   } catch (error) {
-    console.error('SendGrid SMTP Mail Error:', error.response?.data || error.message);
+    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+    console.error('SendGrid SMTP Mail Error:', errorMsg);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'EMAIL',
+      recipient: booking.email,
+      status: 'FAILED',
+      errorMessage: errorMsg
+    });
   }
 }
 
@@ -127,6 +157,12 @@ async function sendTransactionalEmail(booking) {
 async function sendWhatsAppNotification(booking) {
   if (!WATI_API_URL || !WATI_ACCESS_TOKEN) {
     console.log(`💬 [Mock WATI WhatsApp] Confirmation queued for booking: ${booking.id}`);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'WHATSAPP',
+      recipient: booking.phone,
+      status: 'QUEUED_MOCK'
+    });
     return;
   }
 
@@ -151,14 +187,29 @@ async function sendWhatsAppNotification(booking) {
       }
     );
     console.log(`💬 Live WATI WhatsApp broadcast dispatched for booking ${booking.id}`);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'WHATSAPP',
+      recipient: booking.phone,
+      status: 'SENT'
+    });
   } catch (error) {
-    console.error('WATI API Error:', error.response?.data || error.message);
+    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+    console.error('WATI API Error:', errorMsg);
+    await recordNotificationLog({
+      referenceId: booking.id,
+      notificationType: 'WHATSAPP',
+      recipient: booking.phone,
+      status: 'FAILED',
+      errorMessage: errorMsg
+    });
   }
 }
 
 /**
  * Endpoint: POST /api/bookings/quote
  * Description: Calculates authoritative server quote with GST based on packageId and pax.
+ * Strictly validates pax integer and normalized Indian state.
  */
 router.post('/quote', (req, res) => {
   try {
@@ -173,12 +224,26 @@ router.post('/quote', (req, res) => {
       return res.status(400).json({ success: false, message: `Unknown tour package: ${packageId}` });
     }
 
-    const parsedPax = parseInt(pax, 10);
-    if (isNaN(parsedPax) || parsedPax < 1 || parsedPax > 20) {
+    // Strict numeric pax validation: reject malformed strings like '2abc' or '1.5'
+    if (typeof pax !== 'number' && (typeof pax !== 'string' || !/^\d+$/.test(String(pax).trim()))) {
+      return res.status(400).json({ success: false, message: 'Passenger count (pax) must be a positive integer.' });
+    }
+
+    const parsedPax = Number(pax);
+    if (!Number.isInteger(parsedPax) || parsedPax < 1 || parsedPax > 20) {
       return res.status(400).json({ success: false, message: 'Passenger count (pax) must be between 1 and 20.' });
     }
 
-    const quote = calculatePackageQuote(packageId, parsedPax, state || 'Gujarat');
+    // Controlled state validation
+    let normalizedState = 'Gujarat';
+    if (state) {
+      normalizedState = normalizeIndianState(state);
+      if (!normalizedState) {
+        return res.status(400).json({ success: false, message: 'Invalid Indian state or union territory.' });
+      }
+    }
+
+    const quote = calculatePackageQuote(packageId, parsedPax, normalizedState);
 
     return res.status(200).json({
       success: true,
@@ -233,49 +298,72 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
       });
     }
 
-    // 5. Server-Side Date Window Validation (Must be between tomorrow and +60 days)
-    const inputDate = new Date(travelDate);
-    if (isNaN(inputDate.getTime())) {
+    // 5. Strict Date Validation: Exact YYYY-MM-DD regex and calendar existence check
+    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+    if (typeof travelDate !== 'string' || !dateRegex.test(travelDate.trim())) {
       return res.status(400).json({
         success: false,
         message: 'Invalid travelDate format. Expected YYYY-MM-DD.'
       });
     }
 
+    const [year, month, day] = travelDate.trim().split('-').map(Number);
+    const parsedDate = new Date(Date.UTC(year, month - 1, day));
+    if (parsedDate.getUTCFullYear() !== year || parsedDate.getUTCMonth() + 1 !== month || parsedDate.getUTCDate() !== day) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid travelDate: not a real calendar date.'
+      });
+    }
+
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const minAllowedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const maxAllowedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 60);
+    const travelDateObj = new Date(year, month - 1, day);
 
-    const minAllowedDate = new Date(today);
-    minAllowedDate.setDate(minAllowedDate.getDate() + 1); // Tomorrow onwards
-
-    const maxAllowedDate = new Date(today);
-    maxAllowedDate.setDate(maxAllowedDate.getDate() + 60); // 60 days max
-
-    // Compare date parts only
-    const travelDateOnly = new Date(inputDate.toISOString().split('T')[0]);
-    if (travelDateOnly < minAllowedDate) {
+    if (travelDateObj < minAllowedDate) {
       return res.status(400).json({
         success: false,
         message: 'Travel date must be in the future (minimum 1 day in advance).'
       });
     }
-    if (travelDateOnly > maxAllowedDate) {
+    if (travelDateObj > maxAllowedDate) {
       return res.status(400).json({
         success: false,
         message: 'Travel date cannot exceed the 60-day booking window.'
       });
     }
 
-    // 6. Strict Passenger Limit Validation (1 to 20 pax)
-    const adultCount = parseInt(pax, 10);
-    if (isNaN(adultCount) || adultCount < 1 || adultCount > 20) {
+    // 6. Strict Passenger Limit Validation: reject malformed numeric inputs
+    if (typeof pax !== 'number' && (typeof pax !== 'string' || !/^\d+$/.test(String(pax).trim()))) {
       return res.status(400).json({
         success: false,
-        message: 'Passenger count must be an integer between 1 and 20.'
+        message: 'pax must be an integer between 1 and 20.'
       });
     }
 
-    // 7. Authoritative Package Resolution (Completely ignores client-supplied pricing/packageName)
+    const adultCount = Number(pax);
+    if (!Number.isInteger(adultCount) || adultCount < 1 || adultCount > 20) {
+      return res.status(400).json({
+        success: false,
+        message: 'pax must be an integer between 1 and 20.'
+      });
+    }
+
+    // 7. Controlled State Validation
+    let customerState = 'Gujarat';
+    if (state) {
+      const normalized = normalizeIndianState(state);
+      if (!normalized) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid Indian state or union territory.'
+        });
+      }
+      customerState = normalized;
+    }
+
+    // 8. Authoritative Package Resolution
     const pkg = getPackageById(packageId);
     if (!pkg) {
       return res.status(400).json({
@@ -284,8 +372,8 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
       });
     }
 
-    // 8. Idempotency Check: prevent double submissions within 30 seconds
-    const idempotencyKey = `${trimmedEmail}:${pkg.id}:${travelDateOnly.toISOString().split('T')[0]}`;
+    // 9. Idempotency Check: prevent double submissions within 30 seconds
+    const idempotencyKey = `${trimmedEmail}:${pkg.id}:${travelDate.trim()}`;
     if (recentSubmissions.has(idempotencyKey)) {
       return res.status(409).json({
         success: false,
@@ -294,15 +382,15 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
     }
     recentSubmissions.set(idempotencyKey, Date.now());
 
-    // 9. Authoritative Server-Side Quote Calculation
-    const quote = calculatePackageQuote(pkg.id, adultCount, state || 'Gujarat');
+    // 10. Authoritative Server-Side Quote Calculation
+    const quote = calculatePackageQuote(pkg.id, adultCount, customerState);
 
-    // 10. Generate Collision-Resistant Server-Side ID
+    // 11. Generate Collision-Resistant Server-Side ID
     const bookingId = `BK_${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
 
-    // Clean special requests
-    const safeSpecialRequests = specialRequests
-      ? escapeHtml(String(specialRequests).trim().slice(0, 500))
+    // 12. Store Validated Plain Text in specialRequests (avoid pre-escaping to prevent mixing storage and presentation)
+    const plainSpecialRequests = specialRequests
+      ? String(specialRequests).trim().slice(0, 500)
       : null;
 
     const newBooking = {
@@ -312,15 +400,16 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
       name: trimmedName,
       email: trimmedEmail,
       phone: cleanedPhone,
-      travelDate: travelDateOnly.toISOString().split('T')[0],
+      travelDate: travelDate.trim(),
       pax: adultCount,
-      specialRequests: safeSpecialRequests,
+      specialRequests: plainSpecialRequests,
       baseAmount: quote.baseAmount,
       gstAmount: quote.gstAmount,
       gstRate: quote.gstRate,
       totalAmount: quote.totalAmount,
       taxDetails: quote.taxDetails,
       customerState: quote.customerState,
+      state: quote.customerState,
       officeState: quote.officeState,
       invoiceDate: quote.invoiceDate,
       status: 'PENDING_PAYMENT'
@@ -332,7 +421,7 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
     // Redacted PII Logging
     console.info(`[Booking Created] ID: ${bookingId} | Package: ${pkg.id} | Amount: ₹${quote.totalAmount} | Status: PENDING_PAYMENT`);
 
-    // Asynchronously dispatch confirmations
+    // Asynchronously dispatch confirmations with durable logging
     sendTransactionalEmail(newBooking);
     sendWhatsAppNotification(newBooking);
 
@@ -350,6 +439,8 @@ router.post('/enquire', enquiryLimiter, async (req, res, next) => {
         gstAmount: newBooking.gstAmount,
         gstRate: newBooking.gstRate,
         totalAmount: newBooking.totalAmount,
+        customerState: newBooking.customerState,
+        state: newBooking.customerState,
         status: newBooking.status
       }
     });
@@ -407,7 +498,7 @@ router.post('/contact', enquiryLimiter, async (req, res, next) => {
       email: trimmedEmail,
       phone: cleanedPhone,
       destination: destination ? String(destination).trim().slice(0, 100) : 'General Enquiry',
-      message: message ? escapeHtml(String(message).trim().slice(0, 1000)) : '',
+      message: message ? String(message).trim().slice(0, 1000) : '',
       createdAt: new Date().toISOString()
     };
 
@@ -427,13 +518,22 @@ router.post('/contact', enquiryLimiter, async (req, res, next) => {
 
 /**
  * Endpoint: GET /api/bookings
- * Description: Lists all registered enquiries (PROTECTED - Requires ADMIN_API_KEY)
+ * Description: Lists registered enquiries with server-side pagination (PROTECTED - Requires ADMIN_API_KEY)
  */
 router.get('/', requireAdminAuth, async (req, res, next) => {
   try {
-    const bookings = await getBookings();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(Math.max(1, parseInt(req.query.limit, 10) || 20), 100);
+    const status = req.query.status ? String(req.query.status).trim() : null;
+
+    const bookings = await getBookings({ page, limit, status });
+
     res.json({
       success: true,
+      total: bookings.pagination?.total ?? bookings.length,
+      page: bookings.pagination?.page ?? page,
+      limit: bookings.pagination?.limit ?? limit,
+      totalPages: bookings.pagination?.totalPages ?? 1,
       count: bookings.length,
       bookings
     });
@@ -466,13 +566,21 @@ router.get('/:id', requireAdminAuth, async (req, res, next) => {
 
 /**
  * Endpoint: GET /api/bookings/contacts
- * Description: Lists all contact inquiries (PROTECTED - Requires ADMIN_API_KEY)
+ * Description: Lists all contact inquiries with pagination (PROTECTED - Requires ADMIN_API_KEY)
  */
 router.get('/contacts', requireAdminAuth, async (req, res, next) => {
   try {
-    const contacts = await getContacts();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(Math.max(1, parseInt(req.query.limit, 10) || 20), 100);
+
+    const contacts = await getContacts({ page, limit });
+
     res.json({
       success: true,
+      total: contacts.pagination?.total ?? contacts.length,
+      page: contacts.pagination?.page ?? page,
+      limit: contacts.pagination?.limit ?? limit,
+      totalPages: contacts.pagination?.totalPages ?? 1,
       count: contacts.length,
       contacts
     });

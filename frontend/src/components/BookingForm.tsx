@@ -17,6 +17,45 @@ interface QuoteDetails {
   totalAmount: number;
 }
 
+export const INDIAN_STATES = [
+  'Andaman and Nicobar Islands',
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chandigarh',
+  'Chhattisgarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jammu and Kashmir',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Ladakh',
+  'Lakshadweep',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Puducherry',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+];
+
 export default function BookingForm({
   packageId = 'andaman-pb-3n',
   packageName = 'Scenic Andaman Express (Port Blair)',
@@ -30,13 +69,28 @@ export default function BookingForm({
     phone: '',
     travelDate: '',
     pax: 2,
+    state: 'Gujarat',
     specialRequests: '',
   });
 
   const [quote, setQuote] = useState<QuoteDetails | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState<boolean>(true);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
   const [submitted, setSubmitted] = useState(false);
   const [submittedBookingId, setSubmittedBookingId] = useState<string>('');
   const [loading, setLoading] = useState(false);
+
+  // Online Payment state
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    orderId: string;
+    amount: number;
+    mode: string;
+    paymentSessionId: string;
+    paymentStatus: string;
+  } | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Calculate 2-month (60-day) calendar bounds starting from tomorrow
   const { minDate, maxDate } = useMemo(() => {
@@ -51,54 +105,68 @@ export default function BookingForm({
     return { minDate: min, maxDate: max };
   }, []);
 
-  // Fetch or calculate authoritative server-side quote
+  const [quoteRetryCount, setQuoteRetryCount] = useState(0);
+
+  // Authoritative server-side quote fetching (No local fallback calculation)
   useEffect(() => {
     let isCancelled = false;
-    const backendUrl = SITE_CONFIG.apiUrl || 'http://localhost:5000';
+    const isProd = process.env.NODE_ENV === 'production';
+    const backendUrl = SITE_CONFIG.apiUrl || (!isProd ? 'http://localhost:5000' : '');
+    const controller = new AbortController();
 
     async function fetchQuote() {
       try {
         const res = await fetch(`${backendUrl}/api/bookings/quote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ packageId, pax: formData.pax, state: 'Gujarat' }),
+          body: JSON.stringify({
+            packageId,
+            pax: formData.pax,
+            state: formData.state,
+          }),
+          signal: controller.signal,
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          if (!isCancelled && data.quote) {
-            setQuote({
-              baseAmount: data.quote.baseAmount,
-              gstAmount: data.quote.gstAmount,
-              gstRate: data.quote.gstRate,
-              totalAmount: data.quote.totalAmount,
-            });
-            return;
-          }
+        const data = await res.json();
+
+        if (!res.ok || !data.quote) {
+          throw new Error(data.message || 'Pricing quote rejected by server.');
         }
-      } catch {
-        // Fallback to exact server GST formula (5% for standard tour)
-      }
 
-      // Parity fallback
-      if (!isCancelled) {
-        const base = basePrice * formData.pax;
-        const gst = Math.round(base * 0.05);
-        setQuote({
-          baseAmount: base,
-          gstAmount: gst,
-          gstRate: 5,
-          totalAmount: base + gst,
-        });
+        if (!isCancelled) {
+          setQuote({
+            baseAmount: data.quote.baseAmount,
+            gstAmount: data.quote.gstAmount,
+            gstRate: data.quote.gstRate,
+            totalAmount: data.quote.totalAmount,
+          });
+          setQuoteError(null);
+          setQuoteLoading(false);
+        }
+      } catch (err: unknown) {
+        if (!isCancelled) {
+          if (err instanceof Error && err.name === 'AbortError') return;
+          setQuote(null);
+          setQuoteLoading(false);
+          const errMsg = err instanceof Error ? err.message : 'Unable to connect to pricing server.';
+          setQuoteError(errMsg);
+        }
       }
     }
 
     fetchQuote();
-    return () => { isCancelled = true; };
-  }, [packageId, formData.pax, basePrice]);
+
+    return () => {
+      isCancelled = true;
+      controller.abort();
+    };
+  }, [packageId, formData.pax, formData.state, quoteRetryCount]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === 'state') {
+      setQuoteLoading(true);
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -106,6 +174,7 @@ export default function BookingForm({
   };
 
   const handlePaxChange = (increment: boolean) => {
+    setQuoteLoading(true);
     setFormData((prev) => ({
       ...prev,
       pax: increment ? Math.min(20, prev.pax + 1) : Math.max(1, prev.pax - 1),
@@ -128,6 +197,12 @@ export default function BookingForm({
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!quote) {
+      alert('Cannot submit booking without an authoritative server price quote. Please retry quote generation.');
+      return;
+    }
+
     setLoading(true);
 
     if (formData.travelDate < minDate || formData.travelDate > maxDate) {
@@ -143,8 +218,8 @@ export default function BookingForm({
       phone: formData.phone.trim(),
       travelDate: formData.travelDate,
       pax: formData.pax,
+      state: formData.state,
       specialRequests: formData.specialRequests.trim() || undefined,
-      state: 'Gujarat',
     };
 
     try {
@@ -171,9 +246,67 @@ export default function BookingForm({
     }
   };
 
+  // Payment order creation handler
+  const handleInitiatePayment = async () => {
+    if (!submittedBookingId) return;
+    setPaymentLoading(true);
+    setPaymentError(null);
+
+    try {
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: submittedBookingId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Failed to initiate payment');
+      }
+
+      setPaymentInfo({
+        orderId: data.orderId,
+        amount: data.amount,
+        mode: data.mode,
+        paymentSessionId: data.paymentSessionId,
+        paymentStatus: 'PENDING',
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Payment initiation failed';
+      setPaymentError(msg);
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Dev/Test simulation helper
+  const handleSimulatePaymentSuccess = async () => {
+    if (!paymentInfo?.orderId) return;
+    setPaymentLoading(true);
+
+    try {
+      const res = await fetch('/api/payments/mock-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: paymentInfo.orderId }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setPaymentInfo((prev) => (prev ? { ...prev, paymentStatus: 'SUCCESS' } : null));
+      } else {
+        alert(data.error || 'Failed to complete simulation');
+      }
+    } catch {
+      alert('Mock payment failed');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   if (submitted) {
-    const totalDisplay = quote ? quote.totalAmount.toLocaleString('en-IN') : (basePrice * formData.pax).toLocaleString('en-IN');
-    const whatsappMessage = `Hi Shreeya Tours! I have submitted a booking enquiry (Ref: ${submittedBookingId}) for *${packageName}* (${formData.pax} PAX) on ${formData.travelDate}.\n\nLead Name: ${formData.name}\nContact: ${formData.phone}\nEstimated Total (inc. 5% GST): ₹${totalDisplay}${formData.specialRequests ? `\nSpecial Requests: ${formData.specialRequests}` : ''}`;
+    // Minimized PII in WhatsApp URL: only Reference ID, package name, and PAX count
+    const whatsappMessage = `Hi Shreeya Tours! I have submitted a booking enquiry (Reference ID: ${submittedBookingId}) for ${packageName} (${formData.pax} PAX). Please assist with verification.`;
 
     return (
       <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md mx-auto border border-gray-100 animate-fade-in">
@@ -182,27 +315,100 @@ export default function BookingForm({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Enquiry Submitted!</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Enquiry Registered!</h3>
         <p className="text-gray-600 mb-2 text-sm leading-relaxed">
-          Thank you, <span className="font-semibold">{formData.name}</span>. Your enquiry for <span className="font-semibold">{packageName}</span> ({formData.pax} PAX) is registered with ID <span className="font-mono font-bold text-primary">{submittedBookingId}</span>.
+          Your booking enquiry for <span className="font-semibold">{packageName}</span> ({formData.pax} PAX) has been received with Reference ID:
         </p>
+        <div className="bg-gray-100 py-2 px-4 rounded-xl inline-block my-2">
+          <span className="font-mono font-bold text-primary text-base">{submittedBookingId}</span>
+        </div>
         <p className="text-gray-500 mb-6 text-xs">
-          Our tour specialists will contact you shortly on <span className="font-semibold">{formData.phone}</span>.
+          Authoritative Quote: <span className="font-bold text-gray-800">₹{quote?.totalAmount.toLocaleString('en-IN')}</span> (incl. GST)
         </p>
 
-        {/* Instant WhatsApp Handoff Button */}
+        {/* Online Payment Section */}
+        <div className="border-t border-gray-100 pt-5 mb-5 text-left">
+          <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+            Payment Options
+          </h4>
+
+          {paymentError && (
+            <div className="bg-red-50 text-red-700 text-xs p-3 rounded-lg mb-3 border border-red-200">
+              {paymentError}
+            </div>
+          )}
+
+          {paymentInfo?.paymentStatus === 'SUCCESS' ? (
+            <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl text-center mb-3">
+              <span className="text-xl block mb-1">✓</span>
+              <p className="font-bold text-sm">Payment Confirmed!</p>
+              <p className="text-xs text-green-700 mt-1">
+                Order <span className="font-mono font-semibold">{paymentInfo.orderId}</span> is PAID. Your booking is confirmed.
+              </p>
+            </div>
+          ) : paymentInfo ? (
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-3 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Order ID:</span>
+                <span className="font-mono font-bold text-gray-900">{paymentInfo.orderId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Amount:</span>
+                <span className="font-bold text-gray-900">₹{paymentInfo.amount.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Status:</span>
+                <span className="font-bold text-amber-700 uppercase">{paymentInfo.paymentStatus}</span>
+              </div>
+
+              {paymentInfo.mode === 'MOCK' ? (
+                <div className="pt-2 border-t border-amber-200">
+                  <p className="text-[11px] text-amber-800 mb-2">
+                    Sandbox / Demo Mode active: Test instant payment confirmation.
+                  </p>
+                  <button
+                    onClick={handleSimulatePaymentSuccess}
+                    disabled={paymentLoading}
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition text-xs cursor-pointer shadow"
+                  >
+                    {paymentLoading ? 'Processing...' : 'Simulate Successful Payment'}
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-amber-200 text-[11px] text-gray-600">
+                  CashFree session ready. Complete transaction through your preferred UPI / card method.
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={handleInitiatePayment}
+              disabled={paymentLoading}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md mb-3 flex items-center justify-center space-x-1.5 disabled:opacity-60"
+            >
+              <span>💳</span>
+              <span>{paymentLoading ? 'Connecting to Gateway...' : 'Pay Online (UPI / Card / NetBanking)'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* WhatsApp Handoff Button (Minimized PII) */}
         <a
           href={SITE_CONFIG.getWhatsAppUrl(whatsappMessage)}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3.5 bg-secondary hover:bg-secondary-hover text-primary font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md flex items-center justify-center space-x-2 border border-primary/10 mb-3"
+          className="w-full py-3 bg-secondary hover:bg-secondary-hover text-primary font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm flex items-center justify-center space-x-2 border border-primary/10 mb-3"
         >
-          <span>Chat on WhatsApp with Enquiry ➔</span>
+          <span>Chat on WhatsApp with Reference ➔</span>
         </a>
 
         <button
-          onClick={() => { setSubmitted(false); setStep(1); }}
-          className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-sm"
+          onClick={() => {
+            setSubmitted(false);
+            setStep(1);
+            setPaymentInfo(null);
+          }}
+          className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
         >
           Book Another Tour
         </button>
@@ -215,8 +421,8 @@ export default function BookingForm({
       {/* Header and Step Indicators */}
       <div className="bg-primary text-white p-6">
         <h3 className="text-xl font-extrabold uppercase tracking-tight">Book Your Adventure</h3>
-        <p className="text-xs text-red-100 mt-1">Fill out the form below to receive an official quote</p>
-        
+        <p className="text-xs text-red-100 mt-1">Official server pricing & verified travel reservations</p>
+
         {/* Progress Bar */}
         <div className="flex items-center justify-between mt-6 text-xs text-red-100 max-w-xs mx-auto">
           <div className="flex items-center flex-col relative">
@@ -237,7 +443,7 @@ export default function BookingForm({
         {step === 1 && (
           <form onSubmit={nextStep} className="space-y-4">
             <h4 className="text-base font-bold text-gray-900 mb-2 uppercase tracking-wide">Step 1: Contact Details</h4>
-            
+
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
               <input
@@ -318,6 +524,29 @@ export default function BookingForm({
               </p>
             </div>
 
+            {/* Indian State / UT Selection for dynamic GST handling */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                Billing State / Union Territory (for GST)
+              </label>
+              <select
+                name="state"
+                required
+                value={formData.state}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 text-sm bg-white"
+              >
+                {INDIAN_STATES.map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-gray-500 mt-1 font-medium">
+                Tax calculation and GST compliance are determined by your customer billing state.
+              </p>
+            </div>
+
             {/* Single PAX field */}
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
@@ -371,29 +600,51 @@ export default function BookingForm({
               />
             </div>
 
-            {/* Authoritative Server-Side Quote Breakdown */}
-            <div className="bg-red-50/60 border border-primary/20 p-4 rounded-xl space-y-1.5">
-              <div className="flex justify-between text-xs text-gray-600 font-medium">
-                <span>Base Price per PAX</span>
-                <span>₹{basePrice.toLocaleString('en-IN')}</span>
+            {/* Authoritative Server-Side Quote Breakdown (No Client-Side Estimation Fallback) */}
+            {quoteLoading ? (
+              <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center space-y-2">
+                <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                <p className="text-xs text-gray-600 font-semibold">Calculating authoritative quote from server...</p>
               </div>
-              <div className="flex justify-between text-xs text-gray-600 font-medium">
-                <span>Total PAX</span>
-                <span>{formData.pax} Passenger{formData.pax > 1 ? 's' : ''}</span>
+            ) : quoteError ? (
+              <div className="bg-red-50 border border-red-200 p-4 rounded-xl space-y-2">
+                <p className="text-xs text-red-700 font-bold">Pricing Server Error</p>
+                <p className="text-xs text-red-600">{quoteError}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuoteLoading(true);
+                    setQuoteRetryCount((c) => c + 1);
+                  }}
+                  className="text-xs bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-red-700 transition cursor-pointer"
+                >
+                  Retry Quote
+                </button>
               </div>
-              <div className="flex justify-between text-xs text-gray-600 font-medium">
-                <span>Base Subtotal</span>
-                <span>₹{(quote?.baseAmount || (basePrice * formData.pax)).toLocaleString('en-IN')}</span>
+            ) : quote ? (
+              <div className="bg-red-50/60 border border-primary/20 p-4 rounded-xl space-y-1.5">
+                <div className="flex justify-between text-xs text-gray-600 font-medium">
+                  <span>Base Price per PAX</span>
+                  <span>₹{basePrice.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600 font-medium">
+                  <span>Total PAX</span>
+                  <span>{formData.pax} Passenger{formData.pax > 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600 font-medium">
+                  <span>Base Subtotal</span>
+                  <span>₹{quote.baseAmount.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600 font-medium">
+                  <span>GST ({quote.gstRate}% Rate - {formData.state})</span>
+                  <span>₹{quote.gstAmount.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-sm font-black text-primary pt-2 border-t border-primary/10">
+                  <span>Total Quote (GST Included)</span>
+                  <span>₹{quote.totalAmount.toLocaleString('en-IN')}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-600 font-medium">
-                <span>GST (5% Tour Operator Rate)</span>
-                <span>₹{(quote?.gstAmount || Math.round(basePrice * formData.pax * 0.05)).toLocaleString('en-IN')}</span>
-              </div>
-              <div className="flex justify-between text-sm font-black text-primary pt-2 border-t border-primary/10">
-                <span>Total Quote (GST Included)</span>
-                <span>₹{(quote?.totalAmount || Math.round(basePrice * formData.pax * 1.05)).toLocaleString('en-IN')}</span>
-              </div>
-            </div>
+            ) : null}
 
             <div className="flex items-center space-x-3 pt-2">
               <button
@@ -405,8 +656,8 @@ export default function BookingForm({
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className="w-2/3 py-3 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow flex items-center justify-center cursor-pointer disabled:opacity-60"
+                disabled={loading || quoteLoading || !quote || Boolean(quoteError)}
+                className="w-2/3 py-3 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Submitting...' : 'Submit Enquiry'}
               </button>

@@ -59,6 +59,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Safe JSON-LD serialization preventing markup injection
+function safeJsonLdStringify(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
+}
+
 export default async function TourDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const tour = MOCK_TOURS.find((t) => t.slug === slug);
@@ -93,7 +101,7 @@ export default async function TourDetailPage({ params }: PageProps) {
       {/* Search Engine Server-Rendered JSON-LD Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(schemaMarkup) }}
       />
 
       {/* Detail Header Banner with Authentic Destination Image Backdrop & Semi-Transparent Red Gradient */}
