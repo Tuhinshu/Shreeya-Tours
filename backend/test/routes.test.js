@@ -28,6 +28,7 @@ function makeRequest(server, options, postData, rawData = null) {
     
     const headers = {
       'Content-Type': 'application/json',
+      'Connection': 'close',
       ...(options.headers || {})
     };
 
@@ -140,6 +141,9 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
   await new Promise(resolve => server.listen(0, resolve));
 
   t.after(() => {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
     server.close();
   });
 
@@ -1002,8 +1006,8 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
     assert.ok(typeof resPaginated.body.total === 'number');
   });
 
-  // 38. Payment status query endpoint
-  await t.test('38. GET /api/payments/status/:orderId returns authoritative payment & booking status', async () => {
+  // 38. Payment status query endpoint requires unguessable access token
+  await t.test('38. GET /api/payments/status/:orderId returns authoritative payment & booking status with token', async () => {
     const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
       name: 'Status Check User',
       email: 'statuscheck@example.com',
@@ -1018,15 +1022,142 @@ test('Integration & Security: Comprehensive Backend API & Hardening Suite', asyn
       bookingId
     });
     const orderId = payRes.body.orderId;
+    const orderToken = payRes.body.orderToken;
+    assert.ok(orderToken, 'Order creation must return an unguessable access token');
 
-    const statusRes = await makeRequest(server, {
+    // 1. Missing token must be rejected with 401
+    const noTokenRes = await makeRequest(server, {
       path: `/api/payments/status/${orderId}`,
+      method: 'GET'
+    });
+    assert.strictEqual(noTokenRes.statusCode, 401);
+    assert.match(noTokenRes.body.message, /access token/i);
+
+    // 2. Invalid token must be rejected with 401
+    const badTokenRes = await makeRequest(server, {
+      path: `/api/payments/status/${orderId}?token=invalid-fake-token`,
+      method: 'GET'
+    });
+    assert.strictEqual(badTokenRes.statusCode, 401);
+    assert.match(badTokenRes.body.message, /access token/i);
+
+    // 3. Valid token query parameter returns authoritative status
+    const statusRes = await makeRequest(server, {
+      path: `/api/payments/status/${orderId}?token=${orderToken}`,
       method: 'GET'
     });
     assert.strictEqual(statusRes.statusCode, 200);
     assert.strictEqual(statusRes.body.orderId, orderId);
     assert.strictEqual(statusRes.body.paymentStatus, 'PENDING');
     assert.strictEqual(statusRes.body.bookingStatus, 'PENDING_PAYMENT');
+
+    // 4. Valid token in header x-order-token returns authoritative status
+    const headerStatusRes = await makeRequest(server, {
+      path: `/api/payments/status/${orderId}`,
+      method: 'GET',
+      headers: { 'x-order-token': orderToken }
+    });
+    assert.strictEqual(headerStatusRes.statusCode, 200);
+    assert.strictEqual(headerStatusRes.body.orderId, orderId);
+  });
+
+  // 39. Concurrency test: simultaneous create-order requests enforce one active payment order
+  await t.test('39. Concurrency: simultaneous create-order requests enforce one active order per booking', async () => {
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Concurrent Order User',
+      email: 'concurrent@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(42),
+      pax: 2,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    // Fire 5 concurrent create-order requests simultaneously
+    const requests = Array.from({ length: 5 }, () =>
+      makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, { bookingId })
+    );
+
+    const responses = await Promise.all(requests);
+    for (const res of responses) {
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(res.body.orderId);
+    }
+
+    // All 5 concurrent calls must return the same order ID
+    const orderIds = new Set(responses.map(r => r.body.orderId));
+    assert.strictEqual(orderIds.size, 1, 'All concurrent create-order requests must resolve to the same active order');
+  });
+
+  // 40. Admin authentication timingSafeEqual and key validation
+  await t.test('40. Admin authentication uses timingSafeEqual and handles edge-case key lengths', async () => {
+    // Exact key passes
+    const goodRes = await makeRequest(server, {
+      path: '/api/bookings',
+      method: 'GET',
+      headers: { 'x-api-key': process.env.ADMIN_API_KEY }
+    });
+    assert.strictEqual(goodRes.statusCode, 200);
+
+    // Key of different length rejected safely without throwing error
+    const shortKeyRes = await makeRequest(server, {
+      path: '/api/bookings',
+      method: 'GET',
+      headers: { 'x-api-key': 'short' }
+    });
+    assert.strictEqual(shortKeyRes.statusCode, 401);
+
+    // Key of same length but mismatched character rejected
+    const alteredKey = 'x' + process.env.ADMIN_API_KEY.slice(1);
+    const alteredRes = await makeRequest(server, {
+      path: '/api/bookings',
+      method: 'GET',
+      headers: { 'x-api-key': alteredKey }
+    });
+    assert.strictEqual(alteredRes.statusCode, 401);
+  });
+
+  // 41. Webhook atomic deduplication and state machine protection
+  await t.test('41. Webhook transaction enforces atomic updates and rejects invalid terminal transitions', async () => {
+    // Create booking and order
+    const bookRes = await makeRequest(server, { path: '/api/bookings/enquire', method: 'POST' }, {
+      name: 'Terminal State User',
+      email: 'terminal@example.com',
+      phone: '9876543210',
+      travelDate: getFutureDate(45),
+      pax: 1,
+      packageId: 'goa-3n4d'
+    });
+    const bookingId = bookRes.body.bookingId;
+
+    const payRes = await makeRequest(server, { path: '/api/payments/create-order', method: 'POST' }, {
+      bookingId
+    });
+    const cfOrderId = payRes.body.orderId;
+
+    // Manually cancel the booking via admin/db simulation
+    const booking = await getBookingById(bookingId);
+    booking.status = 'CANCELLED';
+
+    // Attempt to pay via webhook
+    const { rawBody, signature, timestamp } = generateCashfreeWebhookPayload(cfOrderId, 'SUCCESS');
+    const hookRes = await makeRequest(server, {
+      path: '/api/payments/webhook',
+      method: 'POST',
+      headers: {
+        'x-webhook-signature': signature,
+        'x-webhook-timestamp': timestamp.toString()
+      }
+    }, null, Buffer.from(rawBody, 'utf-8'));
+
+    // Webhooks return 200 ACKNOWLEDGED to prevent infinite retries from provider, but booking transition is suppressed
+    assert.strictEqual(hookRes.statusCode, 200);
+    assert.strictEqual(hookRes.body.status, 'ACKNOWLEDGED');
+
+    // Booking status must still be CANCELLED (never overwritten)
+    const checkedBooking = await getBookingById(bookingId);
+    assert.strictEqual(checkedBooking.status, 'CANCELLED');
   });
 });
+
 

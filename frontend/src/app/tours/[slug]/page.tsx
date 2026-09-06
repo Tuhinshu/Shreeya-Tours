@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MOCK_TOURS } from '@/utils/mockData';
+import { PACKAGES, getPackageBySlug } from '@/data/packages';
 import TourDetailClient from './TourDetailClient';
 
 const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
@@ -14,7 +14,7 @@ interface PageProps {
 
 // Statically pre-render all tour detail pages at build time
 export async function generateStaticParams() {
-  return MOCK_TOURS.map((tour) => ({
+  return PACKAGES.map((tour) => ({
     slug: tour.slug,
   }));
 }
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 // Generate dynamic SEO metadata for each tour package
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tour = MOCK_TOURS.find((t) => t.slug === slug);
+  const tour = getPackageBySlug(slug);
 
   if (!tour) {
     return {
@@ -69,7 +69,7 @@ function safeJsonLdStringify(data: unknown): string {
 
 export default async function TourDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const tour = MOCK_TOURS.find((t) => t.slug === slug);
+  const tour = getPackageBySlug(slug);
 
   if (!tour) {
     notFound();

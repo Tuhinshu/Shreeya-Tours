@@ -4,7 +4,7 @@ import React, { useState, useMemo, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { MOCK_TOURS } from '@/utils/mockData';
+import { PACKAGES } from '@/data/packages';
 
 function TourCatalogContent() {
   const searchParams = useSearchParams();
@@ -22,7 +22,7 @@ function TourCatalogContent() {
   const filteredTours = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return MOCK_TOURS.filter((tour) => {
+    return PACKAGES.filter((tour) => {
       // 1. Search Query Match
       const matchesSearch = !query || 
         tour.name.toLowerCase().includes(query) || 

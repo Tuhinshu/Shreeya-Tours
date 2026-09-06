@@ -35,7 +35,7 @@ const enquiryLimiter = rateLimit({
 
 // Idempotency cache to prevent rapid duplicate double-submissions (window: 30s)
 const recentSubmissions = new Map();
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [key, timestamp] of recentSubmissions.entries()) {
     if (now - timestamp > 30000) {
@@ -43,10 +43,17 @@ setInterval(() => {
     }
   }
 }, 60000);
+if (cleanupInterval && typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref();
+}
 
 /**
  * Authentication Middleware for protected admin routes
  * Strictly requires environment variable ADMIN_API_KEY with no hardcoded fallback.
+ */
+/**
+ * Authentication Middleware for protected admin routes
+ * Strictly requires environment variable ADMIN_API_KEY with constant-time comparison to prevent timing attacks.
  */
 function requireAdminAuth(req, res, next) {
   const adminApiKey = process.env.ADMIN_API_KEY;
@@ -61,7 +68,14 @@ function requireAdminAuth(req, res, next) {
 
   const providedKey = req.headers['x-api-key'] || req.headers.authorization?.replace(/^Bearer\s+/i, '');
 
-  if (!providedKey || providedKey !== adminApiKey) {
+  let isValid = false;
+  if (providedKey) {
+    const keyBuf = Buffer.from(String(providedKey));
+    const expectedBuf = Buffer.from(String(adminApiKey));
+    isValid = (keyBuf.length === expectedBuf.length) && crypto.timingSafeEqual(keyBuf, expectedBuf);
+  }
+
+  if (!isValid) {
     console.warn(`[Admin Access Denied] IP: ${req.ip} | Action: ${req.method} ${req.originalUrl}`);
     return res.status(401).json({
       success: false,
@@ -75,7 +89,38 @@ function requireAdminAuth(req, res, next) {
 }
 
 /**
- * Helper: Sends SendGrid Transactional Email with output HTML-escaped fields
+ * Helper: Executes an asynchronous operation with strict retry count and exponential backoff
+ */
+async function executeWithRetry(operation, maxRetries = 2, initialDelayMs = 500) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    try {
+      return await operation();
+    } catch (err) {
+      lastError = err;
+      if (attempt <= maxRetries) {
+        const delay = initialDelayMs * Math.pow(2, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Sanitizes external provider error details to prevent leaking tokens or payload bodies into logs
+ */
+function sanitizeProviderError(err) {
+  return {
+    message: err.message || 'Provider communication error',
+    statusCode: err.response?.status || null,
+    statusText: err.response?.statusText || null,
+    errorCode: err.code || null
+  };
+}
+
+/**
+ * Helper: Sends SendGrid Transactional Email with output HTML-escaped fields, 5s timeout, and retry flow
  */
 async function sendTransactionalEmail(booking) {
   if (!SENDGRID_API_KEY) {
@@ -98,38 +143,41 @@ async function sendTransactionalEmail(booking) {
   const safeSpecialRequests = booking.specialRequests ? escapeHtml(booking.specialRequests) : 'None';
 
   try {
-    await axios.post(
-      'https://api.sendgrid.com/v3/mail/send',
-      {
-        personalizations: [{ to: [{ email: booking.email }] }],
-        from: { email: SENDGRID_SENDER, name: 'Shreeya Tours Bookings' },
-        subject: `Booking Enquiry Confirmed - ${booking.packageName}`,
-        content: [
-          {
-            type: 'text/html',
-            value: `
-              <h2>Thank you for choosing Shreeya Tours!</h2>
-              <p>Hi ${safeName},</p>
-              <p>Your enquiry for <strong>${safePackage}</strong> starting on ${safeDate} has been registered.</p>
-              <h3>GST-Compliant B2C Invoice Summary</h3>
-              <ul>
-                <li>Base Amount: ₹${booking.baseAmount.toLocaleString('en-IN')}</li>
-                <li>GST Calculated: ₹${booking.gstAmount.toLocaleString('en-IN')} (Rate: ${booking.gstRate}%)</li>
-                <li><strong>Grand Total: ₹${booking.totalAmount.toLocaleString('en-IN')}</strong></li>
-                <li>Special Notes: ${safeSpecialRequests}</li>
-              </ul>
-              <p>Billing State: ${safeState} | Invoice Date: ${safeInvoiceDate}</p>
-              <p>We will contact you shortly on ${safePhone} to finalize the arrangements.</p>
-            `
-          }
-        ]
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-          'Content-Type': 'application/json'
+    await executeWithRetry(() =>
+      axios.post(
+        'https://api.sendgrid.com/v3/mail/send',
+        {
+          personalizations: [{ to: [{ email: booking.email }] }],
+          from: { email: SENDGRID_SENDER, name: 'Shreeya Tours Bookings' },
+          subject: `Booking Enquiry Confirmed - ${booking.packageName}`,
+          content: [
+            {
+              type: 'text/html',
+              value: `
+                <h2>Thank you for choosing Shreeya Tours!</h2>
+                <p>Hi ${safeName},</p>
+                <p>Your enquiry for <strong>${safePackage}</strong> starting on ${safeDate} has been registered.</p>
+                <h3>GST-Compliant B2C Invoice Summary</h3>
+                <ul>
+                  <li>Base Amount: ₹${booking.baseAmount.toLocaleString('en-IN')}</li>
+                  <li>GST Calculated: ₹${booking.gstAmount.toLocaleString('en-IN')} (Rate: ${booking.gstRate}%)</li>
+                  <li><strong>Grand Total: ₹${booking.totalAmount.toLocaleString('en-IN')}</strong></li>
+                  <li>Special Notes: ${safeSpecialRequests}</li>
+                </ul>
+                <p>Billing State: ${safeState} | Invoice Date: ${safeInvoiceDate}</p>
+                <p>We will contact you shortly on ${safePhone} to finalize the arrangements.</p>
+              `
+            }
+          ]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 5000 // 5-second strict timeout
         }
-      }
+      )
     );
     console.log(`✉️ Live SendGrid email dispatched for booking ${booking.id}`);
     await recordNotificationLog({
@@ -139,20 +187,20 @@ async function sendTransactionalEmail(booking) {
       status: 'SENT'
     });
   } catch (error) {
-    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
-    console.error('SendGrid SMTP Mail Error:', errorMsg);
+    const sanitized = sanitizeProviderError(error);
+    console.error('[SendGrid Dispatch Error]', sanitized);
     await recordNotificationLog({
       referenceId: booking.id,
       notificationType: 'EMAIL',
       recipient: booking.email,
       status: 'FAILED',
-      errorMessage: errorMsg
+      errorMessage: `${sanitized.message} (status: ${sanitized.statusCode})`
     });
   }
 }
 
 /**
- * Helper: Sends automated WhatsApp confirmation message using WATI
+ * Helper: Sends automated WhatsApp confirmation message using WATI with 5s timeout and retry flow
  */
 async function sendWhatsAppNotification(booking) {
   if (!WATI_API_URL || !WATI_ACCESS_TOKEN) {
@@ -167,24 +215,27 @@ async function sendWhatsAppNotification(booking) {
   }
 
   try {
-    await axios.post(
-      `${WATI_API_URL}/api/v1/sendTemplateMessage`,
-      {
-        templateName: 'booking_confirmation_v1',
-        receiverNumber: booking.phone,
-        broadcastName: `Booking_${booking.id}`,
-        parameters: [
-          { name: 'customer_name', value: booking.name },
-          { name: 'tour_name', value: booking.packageName },
-          { name: 'travel_date', value: booking.travelDate }
-        ]
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${WATI_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json'
+    await executeWithRetry(() =>
+      axios.post(
+        `${WATI_API_URL}/api/v1/sendTemplateMessage`,
+        {
+          templateName: 'booking_confirmation_v1',
+          receiverNumber: booking.phone,
+          broadcastName: `Booking_${booking.id}`,
+          parameters: [
+            { name: 'customer_name', value: booking.name },
+            { name: 'tour_name', value: booking.packageName },
+            { name: 'travel_date', value: booking.travelDate }
+          ]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${WATI_ACCESS_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 5000 // 5-second strict timeout
         }
-      }
+      )
     );
     console.log(`💬 Live WATI WhatsApp broadcast dispatched for booking ${booking.id}`);
     await recordNotificationLog({
@@ -194,14 +245,14 @@ async function sendWhatsAppNotification(booking) {
       status: 'SENT'
     });
   } catch (error) {
-    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
-    console.error('WATI API Error:', errorMsg);
+    const sanitized = sanitizeProviderError(error);
+    console.error('[WATI Dispatch Error]', sanitized);
     await recordNotificationLog({
       referenceId: booking.id,
       notificationType: 'WHATSAPP',
       recipient: booking.phone,
       status: 'FAILED',
-      errorMessage: errorMsg
+      errorMessage: `${sanitized.message} (status: ${sanitized.statusCode})`
     });
   }
 }

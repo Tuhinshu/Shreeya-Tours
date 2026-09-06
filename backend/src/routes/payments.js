@@ -10,7 +10,9 @@ const {
   getActivePaymentByBookingId,
   updatePaymentStatus,
   isWebhookEventProcessed,
-  recordProcessedWebhookEvent
+  recordProcessedWebhookEvent,
+  processPaymentWebhookTransaction,
+  verifyPaymentAccessToken
 } = require('../utils/db');
 
 // CashFree API Configs
@@ -70,14 +72,16 @@ router.post('/create-order', async (req, res, next) => {
         mode: existingActivePayment.paymentSessionId.startsWith('mock_') ? 'MOCK' : 'LIVE',
         paymentSessionId: existingActivePayment.paymentSessionId,
         orderId: existingActivePayment.cfOrderId,
+        orderToken: existingActivePayment.orderToken,
         amount: Number(existingActivePayment.amount),
         currency: existingActivePayment.currency || 'INR'
       });
     }
 
-    // Generate secure server-side order ID (never trust client orderId)
+    // Generate secure server-side order ID and unguessable access token
     const serverOrderId = `CF_${Date.now()}_${crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
     const paymentId = `PAY_${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+    const orderToken = crypto.randomBytes(32).toString('hex');
     const authoritativeAmount = booking.totalAmount;
 
     // Generate opaque customer ID (never expose raw customer phone in provider identifier)
@@ -97,21 +101,42 @@ router.post('/create-order', async (req, res, next) => {
       console.warn('⚠️ CashFree API credentials missing. Initiating MOCK payment session.');
       const mockSessionId = `mock_session_${Date.now()}`;
 
-      await savePayment({
-        id: paymentId,
-        bookingId: booking.id,
-        cfOrderId: serverOrderId,
-        paymentSessionId: mockSessionId,
-        amount: authoritativeAmount,
-        currency: 'INR',
-        status: 'PENDING'
-      });
+      try {
+        await savePayment({
+          id: paymentId,
+          bookingId: booking.id,
+          cfOrderId: serverOrderId,
+          paymentSessionId: mockSessionId,
+          amount: authoritativeAmount,
+          currency: 'INR',
+          status: 'PENDING',
+          orderToken
+        });
+      } catch (err) {
+        // Handle DB-level unique constraint race condition
+        if (err.code === '23505' || err.message.includes('one_active_pending')) {
+          const active = await getActivePaymentByBookingId(booking.id);
+          if (active) {
+            return res.status(200).json({
+              success: true,
+              mode: 'MOCK',
+              paymentSessionId: active.paymentSessionId,
+              orderId: active.cfOrderId,
+              orderToken: active.orderToken,
+              amount: Number(active.amount),
+              currency: active.currency || 'INR'
+            });
+          }
+        }
+        throw err;
+      }
 
       return res.status(200).json({
         success: true,
         mode: 'MOCK',
         paymentSessionId: mockSessionId,
         orderId: serverOrderId,
+        orderToken,
         amount: authoritativeAmount,
         currency: 'INR'
       });
@@ -131,7 +156,7 @@ router.post('/create-order', async (req, res, next) => {
           customer_phone: booking.phone
         },
         order_meta: {
-          return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/bookings/callback?order_id={order_id}`
+          return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/bookings/callback?order_id=${serverOrderId}&token=${orderToken}`
         }
       },
       {
@@ -144,15 +169,34 @@ router.post('/create-order', async (req, res, next) => {
       }
     );
 
-    await savePayment({
-      id: paymentId,
-      bookingId: booking.id,
-      cfOrderId: serverOrderId,
-      paymentSessionId: response.data.payment_session_id,
-      amount: authoritativeAmount,
-      currency: 'INR',
-      status: 'PENDING'
-    });
+    try {
+      await savePayment({
+        id: paymentId,
+        bookingId: booking.id,
+        cfOrderId: serverOrderId,
+        paymentSessionId: response.data.payment_session_id,
+        amount: authoritativeAmount,
+        currency: 'INR',
+        status: 'PENDING',
+        orderToken
+      });
+    } catch (err) {
+      if (err.code === '23505' || err.message.includes('one_active_pending')) {
+        const active = await getActivePaymentByBookingId(booking.id);
+        if (active) {
+          return res.status(200).json({
+            success: true,
+            mode: 'LIVE',
+            paymentSessionId: active.paymentSessionId,
+            orderId: active.cfOrderId,
+            orderToken: active.orderToken,
+            amount: Number(active.amount),
+            currency: active.currency || 'INR'
+          });
+        }
+      }
+      throw err;
+    }
 
     console.info(`[Payment Order Created] OrderID: ${serverOrderId} | BookingID: ${booking.id} | Amount: ₹${authoritativeAmount}`);
 
@@ -161,6 +205,7 @@ router.post('/create-order', async (req, res, next) => {
       mode: 'LIVE',
       paymentSessionId: response.data.payment_session_id,
       orderId: serverOrderId,
+      orderToken,
       amount: authoritativeAmount,
       currency: 'INR'
     });
@@ -174,12 +219,11 @@ router.post('/create-order', async (req, res, next) => {
 /**
  * Endpoint: POST /api/payments/webhook
  * Description: CashFree webhook with exact signature verification, replay protection,
- * amount/currency reconciliation, durable event deduplication, and booking state machine.
+ * amount/currency reconciliation, durable event deduplication, and single-transaction persistence.
  */
 router.post('/webhook', async (req, res) => {
   const secretKey = process.env.CASHFREE_SECRET_KEY;
 
-  // Never silently skip verification in production
   if (!secretKey) {
     console.error('[Webhook Rejected] CASHFREE_SECRET_KEY is missing. Webhook verification cannot be performed.');
     return res.status(500).json({
@@ -250,7 +294,7 @@ router.post('/webhook', async (req, res) => {
     });
   }
 
-  // Authoritative State Transition & Amount Reconciliation
+  // Authoritative State Transition & Amount Reconciliation inside single DB transaction
   try {
     const payload = req.body || {};
     const orderData = payload.data?.order || payload.order || {};
@@ -267,7 +311,7 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).json({ status: 'IGNORED_NO_ORDER_ID' });
     }
 
-    // Durable Event-Level Deduplication
+    // Durable Event-Level Deduplication Check
     const eventId = payload.event_id || cfPaymentId || (orderId + '_' + upperStatus);
     const alreadyProcessed = await isWebhookEventProcessed(eventId);
     if (alreadyProcessed) {
@@ -281,6 +325,8 @@ router.post('/webhook', async (req, res) => {
       return res.status(404).json({ success: false, message: `Payment order not found: ${orderId}` });
     }
 
+    const booking = paymentRecord.bookingId ? await getBookingById(paymentRecord.bookingId) : null;
+
     // Map CashFree status to internal states
     let newBookingStatus = null;
     let paymentDbStatus = 'PENDING';
@@ -289,14 +335,20 @@ router.post('/webhook', async (req, res) => {
     const isFailure = (upperStatus === 'FAILED' || upperStatus === 'PAYMENT_FAILED' || upperStatus === 'USER_DROPPED' || upperStatus === 'CANCELLED');
 
     if (isSuccess) {
-      // Amount & Currency Verification: compare provider reported amount vs recorded amount
+      // Amount & Currency Verification: compare provider reported amount vs BOTH paymentRecord AND authoritative booking
       const providerAmount = Number(paymentData.payment_amount ?? orderData.order_amount);
       const providerCurrency = String(paymentData.payment_currency ?? orderData.order_currency ?? 'INR').toUpperCase();
-      const recordedAmount = Number(paymentRecord.amount);
+      const recordedPaymentAmount = Number(paymentRecord.amount);
+      const recordedBookingAmount = booking ? Number(booking.totalAmount) : recordedPaymentAmount;
       const recordedCurrency = String(paymentRecord.currency || 'INR').toUpperCase();
 
-      if (isNaN(providerAmount) || Math.abs(providerAmount - recordedAmount) > 0.05 || providerCurrency !== recordedCurrency) {
-        console.error(`[Webhook Amount Mismatch] Order ${orderId}: Expected ₹${recordedAmount} ${recordedCurrency}, provider reported ₹${providerAmount} ${providerCurrency}`);
+      if (
+        isNaN(providerAmount) ||
+        Math.abs(providerAmount - recordedPaymentAmount) > 0.05 ||
+        Math.abs(providerAmount - recordedBookingAmount) > 0.05 ||
+        providerCurrency !== recordedCurrency
+      ) {
+        console.error(`[Webhook Amount Mismatch] Order ${orderId}: Expected ₹${recordedPaymentAmount} (Booking: ₹${recordedBookingAmount}) ${recordedCurrency}, provider reported ₹${providerAmount} ${providerCurrency}`);
         await updatePaymentStatus(orderId, 'AMOUNT_MISMATCH', cfPaymentId, paymentMethod, payload);
         await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT_SUCCESS', orderId, cfPaymentId, 'AMOUNT_MISMATCH');
         return res.status(400).json({
@@ -312,32 +364,35 @@ router.post('/webhook', async (req, res) => {
       newBookingStatus = 'PAYMENT_FAILED';
     }
 
-    // Check existing payment status idempotency & terminal protection
+    // Check existing payment status terminal protection
     if (paymentRecord.status === 'SUCCESS') {
       console.info(`[Webhook Idempotent] Order ${orderId} is already resolved to SUCCESS.`);
       await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT', orderId, cfPaymentId, 'SUCCESS');
       return res.status(200).json({ status: 'ALREADY_PROCESSED' });
     }
 
-    // Update payment record in database with sanitized payload
-    await updatePaymentStatus(orderId, paymentDbStatus, cfPaymentId, paymentMethod, payload);
-
-    // Enforce Booking State Machine: Only transition eligible booking states
-    if (paymentRecord.bookingId && newBookingStatus) {
-      const booking = await getBookingById(paymentRecord.bookingId);
-      if (booking) {
-        const eligibleStates = ['PENDING_PAYMENT', 'PAYMENT_FAILED'];
-        if (eligibleStates.includes(booking.status)) {
-          await updateBookingStatus(paymentRecord.bookingId, newBookingStatus);
-          console.info(`[Booking State Transition] Booking: ${paymentRecord.bookingId} (${booking.status}) ➔ ${newBookingStatus} (Order: ${orderId})`);
-        } else {
-          console.warn(`[Booking State Protected] Booking ${booking.id} is in terminal state '${booking.status}'; status transition to '${newBookingStatus}' ignored.`);
-        }
-      }
+    // Protect terminal booking states from overwrite
+    if (booking && !['PENDING_PAYMENT', 'PAYMENT_FAILED'].includes(booking.status)) {
+      console.warn(`[Booking State Protected] Booking ${booking.id} is in terminal state '${booking.status}'; transition to '${newBookingStatus}' ignored.`);
+      newBookingStatus = null;
     }
 
-    // Record durable event completion
-    await recordProcessedWebhookEvent(eventId, payload.type || 'PAYMENT', orderId, cfPaymentId, paymentDbStatus);
+    // Execute atomic transaction for payment status, booking status, and webhook deduplication
+    const txResult = await processPaymentWebhookTransaction({
+      eventId,
+      eventType: payload.type || 'PAYMENT',
+      orderId,
+      cfPaymentId,
+      paymentDbStatus,
+      newBookingStatus,
+      bookingId: paymentRecord.bookingId,
+      paymentMethod,
+      rawPayload: payload
+    });
+
+    if (txResult.alreadyProcessed) {
+      return res.status(200).json({ status: 'ALREADY_PROCESSED', eventId });
+    }
 
     return res.status(200).json({
       status: 'ACKNOWLEDGED',
@@ -357,6 +412,7 @@ router.post('/webhook', async (req, res) => {
 /**
  * Endpoint: GET /api/payments/status/:orderId
  * Description: Retrieves authoritative status of a payment order and associated booking.
+ * Protected by an unguessable access token or admin API key.
  */
 router.get('/status/:orderId', async (req, res) => {
   try {
@@ -365,9 +421,28 @@ router.get('/status/:orderId', async (req, res) => {
       return res.status(400).json({ success: false, message: 'orderId parameter is required' });
     }
 
+    const token = req.query.token || req.headers['x-order-token'];
+    const apiKey = req.headers['x-api-key'];
+
+    const isAdmin = apiKey && process.env.ADMIN_API_KEY && (() => {
+      const keyBuf = Buffer.from(String(apiKey));
+      const expBuf = Buffer.from(String(process.env.ADMIN_API_KEY));
+      return (keyBuf.length === expBuf.length) && crypto.timingSafeEqual(keyBuf, expBuf);
+    })();
+
     const payment = await getPaymentByOrderId(orderId);
     if (!payment) {
       return res.status(404).json({ success: false, message: `Payment order not found: ${orderId}` });
+    }
+
+    // Enforce unguessable access token verification unless authenticated as admin
+    if (!isAdmin) {
+      if (!token || !verifyPaymentAccessToken(payment, token)) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized: Missing or invalid order access token'
+        });
+      }
     }
 
     const booking = payment.bookingId ? await getBookingById(payment.bookingId) : null;

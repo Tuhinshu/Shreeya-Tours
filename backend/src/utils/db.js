@@ -270,12 +270,13 @@ async function savePayment(payment) {
   checkReady();
 
   const sanitized = sanitizePaymentPayload(payment.rawPayload);
+  const orderToken = payment.orderToken || null;
 
   if (pool) {
     const query = `
       INSERT INTO payments (
-        id, booking_id, cf_order_id, payment_session_id, amount, currency, status, cf_payment_id, payment_method, raw_payload
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        id, booking_id, cf_order_id, payment_session_id, amount, currency, status, cf_payment_id, payment_method, raw_payload, order_token
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *;
     `;
     const values = [
@@ -288,14 +289,32 @@ async function savePayment(payment) {
       payment.status || 'PENDING',
       payment.cfPaymentId || null,
       payment.paymentMethod || null,
-      sanitized ? JSON.stringify(sanitized) : null
+      sanitized ? JSON.stringify(sanitized) : null,
+      orderToken
     ];
     const res = await pool.query(query, values);
-    return res.rows[0];
+    const row = res.rows[0];
+    if (row && row.order_token && !row.orderToken) {
+      row.orderToken = row.order_token;
+    }
+    return row;
+  }
+
+  // Enforce DB-level constraint: Maximum of 1 active PENDING order per booking
+  if ((payment.status || 'PENDING') === 'PENDING') {
+    const hasActivePending = Array.from(memStore.payments.values()).some(
+      p => p.bookingId === payment.bookingId && p.status === 'PENDING'
+    );
+    if (hasActivePending) {
+      const err = new Error('duplicate key value violates unique constraint "idx_payments_one_active_pending"');
+      err.code = '23505';
+      throw err;
+    }
   }
 
   memStore.payments.set(payment.cfOrderId, {
     ...payment,
+    orderToken,
     rawPayload: sanitized,
     createdAt: new Date().toISOString()
   });
@@ -307,7 +326,11 @@ async function getPaymentByOrderId(orderId) {
 
   if (pool) {
     const res = await pool.query('SELECT * FROM payments WHERE cf_order_id = $1', [orderId]);
-    return res.rows[0] || null;
+    const row = res.rows[0] || null;
+    if (row && row.order_token && !row.orderToken) {
+      row.orderToken = row.order_token;
+    }
+    return row;
   }
 
   return memStore.payments.get(orderId) || null;
@@ -326,7 +349,11 @@ async function getActivePaymentByBookingId(bookingId) {
        ORDER BY created_at DESC LIMIT 1`,
       [bookingId]
     );
-    return res.rows[0] || null;
+    const row = res.rows[0] || null;
+    if (row && row.order_token && !row.orderToken) {
+      row.orderToken = row.order_token;
+    }
+    return row;
   }
 
   const active = Array.from(memStore.payments.values())
@@ -357,7 +384,11 @@ async function updatePaymentStatus(cfOrderId, status, cfPaymentId = null, paymen
        RETURNING *;`,
       [status, cfPaymentId, paymentMethod, sanitized ? JSON.stringify(sanitized) : null, cfOrderId]
     );
-    return res.rows[0] || null;
+    const row = res.rows[0] || null;
+    if (row && row.order_token && !row.orderToken) {
+      row.orderToken = row.order_token;
+    }
+    return row;
   }
 
   const payment = memStore.payments.get(cfOrderId);
@@ -374,7 +405,7 @@ async function updatePaymentStatus(cfOrderId, status, cfPaymentId = null, paymen
 }
 
 /**
- * Webhook Event Deduplication Helpers
+ * Webhook Event Deduplication Helpers with DB-level uniqueness constraint
  */
 async function isWebhookEventProcessed(eventId) {
   checkReady();
@@ -395,11 +426,16 @@ async function recordProcessedWebhookEvent(eventId, eventType, orderId, cfPaymen
   if (pool) {
     await pool.query(
       `INSERT INTO processed_webhook_events (event_id, event_type, order_id, cf_payment_id, status)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (event_id) DO NOTHING`,
+       VALUES ($1, $2, $3, $4, $5)`,
       [eventId, eventType, orderId, cfPaymentId, status]
     );
     return;
+  }
+
+  if (memStore.processedWebhookEvents.has(eventId)) {
+    const err = new Error('duplicate key value violates unique constraint "processed_webhook_events_pkey"');
+    err.code = '23505';
+    throw err;
   }
 
   memStore.processedWebhookEvents.set(eventId, {
@@ -410,6 +446,112 @@ async function recordProcessedWebhookEvent(eventId, eventType, orderId, cfPaymen
     status,
     processedAt: new Date().toISOString()
   });
+}
+
+/**
+ * Atomic Transaction Processor for Webhooks:
+ * Updates payment status, booking status, and records processed webhook event inside one atomic DB transaction.
+ */
+async function processPaymentWebhookTransaction({
+  eventId,
+  eventType,
+  orderId,
+  cfPaymentId,
+  paymentDbStatus,
+  newBookingStatus,
+  bookingId,
+  paymentMethod,
+  rawPayload
+}) {
+  checkReady();
+  const sanitized = sanitizePaymentPayload(rawPayload);
+
+  if (pool) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 1. Record webhook event (fails with 23505 if already processed)
+      await client.query(
+        `INSERT INTO processed_webhook_events (event_id, event_type, order_id, cf_payment_id, status)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [eventId, eventType, orderId, cfPaymentId, paymentDbStatus]
+      );
+
+      // 2. Update payment status
+      await client.query(
+        `UPDATE payments 
+         SET status = $1, cf_payment_id = COALESCE($2, cf_payment_id), 
+             payment_method = COALESCE($3, payment_method), raw_payload = COALESCE($4, raw_payload),
+             updated_at = CURRENT_TIMESTAMP 
+         WHERE cf_order_id = $5`,
+        [paymentDbStatus, cfPaymentId, paymentMethod, sanitized ? JSON.stringify(sanitized) : null, orderId]
+      );
+
+      // 3. Update booking status only if in eligible state
+      if (bookingId && newBookingStatus) {
+        await client.query(
+          `UPDATE bookings 
+           SET status = $1, updated_at = CURRENT_TIMESTAMP 
+           WHERE id = $2 AND status IN ('PENDING_PAYMENT', 'PAYMENT_FAILED')`,
+          [newBookingStatus, bookingId]
+        );
+      }
+
+      await client.query('COMMIT');
+      return { success: true };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      if (err.code === '23505') {
+        return { alreadyProcessed: true };
+      }
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  // In-memory atomic block
+  if (memStore.processedWebhookEvents.has(eventId)) {
+    return { alreadyProcessed: true };
+  }
+
+  memStore.processedWebhookEvents.set(eventId, {
+    eventId,
+    eventType,
+    orderId,
+    cfPaymentId,
+    status: paymentDbStatus,
+    processedAt: new Date().toISOString()
+  });
+
+  const payment = memStore.payments.get(orderId);
+  if (payment) {
+    payment.status = paymentDbStatus;
+    if (cfPaymentId) payment.cfPaymentId = cfPaymentId;
+    if (paymentMethod) payment.paymentMethod = paymentMethod;
+    if (sanitized) payment.rawPayload = sanitized;
+    payment.updatedAt = new Date().toISOString();
+    memStore.payments.set(orderId, payment);
+  }
+
+  if (bookingId && newBookingStatus) {
+    const booking = memStore.bookings.get(bookingId);
+    if (booking && ['PENDING_PAYMENT', 'PAYMENT_FAILED'].includes(booking.status)) {
+      booking.status = newBookingStatus;
+      booking.updatedAt = new Date().toISOString();
+      memStore.bookings.set(bookingId, booking);
+    }
+  }
+
+  return { success: true };
+}
+
+function verifyPaymentAccessToken(payment, token) {
+  if (!payment || !payment.orderToken || !token) return false;
+  const userBuf = Buffer.from(String(token));
+  const expectedBuf = Buffer.from(String(payment.orderToken));
+  return (userBuf.length === expectedBuf.length) && crypto.timingSafeEqual(userBuf, expectedBuf);
 }
 
 /**
@@ -502,6 +644,8 @@ module.exports = {
   updatePaymentStatus,
   isWebhookEventProcessed,
   recordProcessedWebhookEvent,
+  processPaymentWebhookTransaction,
+  verifyPaymentAccessToken,
   recordNotificationLog,
   saveContact,
   getContacts,

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { SITE_CONFIG } from '@/config/site';
-import { MOCK_TOURS } from '@/utils/mockData';
+import { PACKAGES } from '@/data/packages';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -312,22 +312,22 @@ export default function ContactUs() {
                       >
                         <option value="Custom Itinerary / Pan-India">Custom Tour (Pan-India)</option>
                         <optgroup label="West India & Gujarat">
-                          {MOCK_TOURS.filter(t => t.region === 'west_india').map(t => (
+                          {PACKAGES.filter(t => t.region === 'west_india').map(t => (
                             <option key={t.id} value={t.name}>{t.name}</option>
                           ))}
                         </optgroup>
                         <optgroup label="South India">
-                          {MOCK_TOURS.filter(t => t.region === 'south_india').map(t => (
+                          {PACKAGES.filter(t => t.region === 'south_india').map(t => (
                             <option key={t.id} value={t.name}>{t.name}</option>
                           ))}
                         </optgroup>
                         <optgroup label="North India & Himalayas">
-                          {MOCK_TOURS.filter(t => t.region === 'north_india').map(t => (
+                          {PACKAGES.filter(t => t.region === 'north_india').map(t => (
                             <option key={t.id} value={t.name}>{t.name}</option>
                           ))}
                         </optgroup>
                         <optgroup label="East India & Andaman">
-                          {MOCK_TOURS.filter(t => t.region === 'east_india').map(t => (
+                          {PACKAGES.filter(t => t.region === 'east_india').map(t => (
                             <option key={t.id} value={t.name}>{t.name}</option>
                           ))}
                         </optgroup>

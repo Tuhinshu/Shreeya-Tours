@@ -1,4 +1,4 @@
-import { MOCK_TOURS } from './mockData';
+import { PACKAGES } from '@/data/packages';
 
 export interface TourCategoryItem {
   name: string;
@@ -23,11 +23,11 @@ const CATEGORY_MAP: { idPrefix: string; name: string; slug: string }[] = [
 ];
 
 /**
- * Dynamically derives destination navigation categories from MOCK_TOURS.
+ * Dynamically derives destination navigation categories from PACKAGES.
  * Ensures zero stale links and automatic sync when tours are added, renamed, or modified.
  */
 export const DESTINATION_CATEGORIES: DestinationCategory[] = CATEGORY_MAP.map((cat) => {
-  const matchingTours = MOCK_TOURS.filter((tour) => tour.id.startsWith(cat.idPrefix));
+  const matchingTours = PACKAGES.filter((tour) => tour.id.startsWith(cat.idPrefix));
   return {
     name: cat.name,
     slug: cat.slug,

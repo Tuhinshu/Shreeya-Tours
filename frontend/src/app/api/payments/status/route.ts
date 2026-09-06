@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
+import { proxyToBackend } from '@/lib/apiProxy';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
+    const token = searchParams.get('token');
 
     if (!orderId) {
       return NextResponse.json(
@@ -12,39 +14,22 @@ export async function GET(request: Request) {
       );
     }
 
-    const isProd = process.env.NODE_ENV === 'production';
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || (!isProd ? 'http://localhost:5000' : null);
-
-    if (isProd && !backendUrl) {
-      return NextResponse.json(
-        { success: false, error: 'Configuration Error: Production backend API URL is not configured.' },
-        { status: 500 }
-      );
+    const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : '';
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['x-order-token'] = token;
     }
 
-    try {
-      const res = await fetch(`${backendUrl}/api/payments/status/${encodeURIComponent(orderId)}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        return NextResponse.json(
-          { success: false, error: data.message || 'Failed to retrieve payment status' },
-          { status: res.status }
-        );
-      }
-
-      return NextResponse.json(data);
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Backend payment service unavailable';
-      return NextResponse.json(
-        { success: false, error: errMsg },
-        { status: 502 }
-      );
-    }
+    return await proxyToBackend({
+      path: `/api/payments/status/${encodeURIComponent(orderId)}${tokenQuery}`,
+      method: 'GET',
+      headers
+    });
   } catch {
     return NextResponse.json(
-      { success: false, error: 'Invalid request' },
+      { success: false, error: 'Invalid request payload.' },
       { status: 400 }
     );
   }
 }
+

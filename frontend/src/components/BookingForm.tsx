@@ -6,7 +6,6 @@ import { SITE_CONFIG } from '@/config/site';
 interface BookingFormProps {
   packageId?: string;
   packageName?: string;
-  basePrice?: number;
   onSuccess?: () => void;
 }
 
@@ -59,7 +58,6 @@ export const INDIAN_STATES = [
 export default function BookingForm({
   packageId = 'andaman-pb-3n',
   packageName = 'Scenic Andaman Express (Port Blair)',
-  basePrice = 11150,
   onSuccess,
 }: BookingFormProps) {
   const [step, setStep] = useState(1);
@@ -85,6 +83,7 @@ export default function BookingForm({
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<{
     orderId: string;
+    orderToken?: string;
     amount: number;
     mode: string;
     paymentSessionId: string;
@@ -110,13 +109,11 @@ export default function BookingForm({
   // Authoritative server-side quote fetching (No local fallback calculation)
   useEffect(() => {
     let isCancelled = false;
-    const isProd = process.env.NODE_ENV === 'production';
-    const backendUrl = SITE_CONFIG.apiUrl || (!isProd ? 'http://localhost:5000' : '');
     const controller = new AbortController();
 
     async function fetchQuote() {
       try {
-        const res = await fetch(`${backendUrl}/api/bookings/quote`, {
+        const res = await fetch('/api/bookings/quote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -266,6 +263,7 @@ export default function BookingForm({
 
       setPaymentInfo({
         orderId: data.orderId,
+        orderToken: data.orderToken,
         amount: data.amount,
         mode: data.mode,
         paymentSessionId: data.paymentSessionId,
@@ -279,10 +277,11 @@ export default function BookingForm({
     }
   };
 
-  // Dev/Test simulation helper
+  // Dev/Test simulation helper: marks order complete on provider then fetches authoritative backend status
   const handleSimulatePaymentSuccess = async () => {
     if (!paymentInfo?.orderId) return;
     setPaymentLoading(true);
+    setPaymentError(null);
 
     try {
       const res = await fetch('/api/payments/mock-complete', {
@@ -292,13 +291,48 @@ export default function BookingForm({
       });
 
       const data = await res.json();
-      if (res.ok) {
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to complete mock transaction');
+      }
+
+      // Authoritative verification: Fetch backend payment status using order token
+      const tokenQuery = paymentInfo.orderToken ? `&token=${encodeURIComponent(paymentInfo.orderToken)}` : '';
+      const statusRes = await fetch(`/api/payments/status?orderId=${encodeURIComponent(paymentInfo.orderId)}${tokenQuery}`);
+      const statusData = await statusRes.json();
+
+      if (statusRes.ok && statusData.paymentStatus === 'SUCCESS') {
         setPaymentInfo((prev) => (prev ? { ...prev, paymentStatus: 'SUCCESS' } : null));
       } else {
-        alert(data.error || 'Failed to complete simulation');
+        setPaymentInfo((prev) => (prev ? { ...prev, paymentStatus: statusData.paymentStatus || 'PENDING' } : null));
+        throw new Error(`Payment not confirmed. Current status: ${statusData.paymentStatus || 'PENDING'}`);
       }
-    } catch {
-      alert('Mock payment failed');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Mock payment verification failed';
+      setPaymentError(msg);
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Authoritative status check for pending payments
+  const handleCheckPaymentStatus = async () => {
+    if (!paymentInfo?.orderId) return;
+    setPaymentLoading(true);
+    setPaymentError(null);
+
+    try {
+      const tokenQuery = paymentInfo.orderToken ? `&token=${encodeURIComponent(paymentInfo.orderToken)}` : '';
+      const statusRes = await fetch(`/api/payments/status?orderId=${encodeURIComponent(paymentInfo.orderId)}${tokenQuery}`);
+      const statusData = await statusRes.json();
+
+      if (statusRes.ok && statusData.paymentStatus) {
+        setPaymentInfo((prev) => (prev ? { ...prev, paymentStatus: statusData.paymentStatus } : null));
+      } else {
+        throw new Error(statusData.error || 'Failed to check status');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not retrieve payment status';
+      setPaymentError(msg);
     } finally {
       setPaymentLoading(false);
     }
@@ -362,21 +396,39 @@ export default function BookingForm({
               </div>
 
               {paymentInfo.mode === 'MOCK' ? (
-                <div className="pt-2 border-t border-amber-200">
-                  <p className="text-[11px] text-amber-800 mb-2">
-                    Sandbox / Demo Mode active: Test instant payment confirmation.
+                <div className="pt-2 border-t border-amber-200 space-y-2">
+                  <p className="text-[11px] text-amber-800 mb-1">
+                    Sandbox / Demo Mode active: Test verified server payment confirmation.
                   </p>
                   <button
                     onClick={handleSimulatePaymentSuccess}
                     disabled={paymentLoading}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition text-xs cursor-pointer shadow"
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition text-xs cursor-pointer shadow disabled:opacity-60"
                   >
-                    {paymentLoading ? 'Processing...' : 'Simulate Successful Payment'}
+                    {paymentLoading ? 'Verifying with Server...' : 'Simulate & Verify Server Payment'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCheckPaymentStatus}
+                    disabled={paymentLoading}
+                    className="w-full py-1.5 bg-white border border-amber-300 text-amber-900 font-semibold rounded-lg hover:bg-amber-50 transition text-xs cursor-pointer"
+                  >
+                    {paymentLoading ? 'Checking...' : '🔄 Check Server Payment Status'}
                   </button>
                 </div>
               ) : (
-                <div className="pt-2 border-t border-amber-200 text-[11px] text-gray-600">
-                  CashFree session ready. Complete transaction through your preferred UPI / card method.
+                <div className="pt-2 border-t border-amber-200 space-y-2">
+                  <p className="text-[11px] text-gray-600">
+                    CashFree session ready. Complete transaction through your preferred UPI / card method.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCheckPaymentStatus}
+                    disabled={paymentLoading}
+                    className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition text-xs cursor-pointer"
+                  >
+                    {paymentLoading ? 'Verifying...' : '🔄 Verify Payment Status'}
+                  </button>
                 </div>
               )}
             </div>
@@ -625,7 +677,7 @@ export default function BookingForm({
               <div className="bg-red-50/60 border border-primary/20 p-4 rounded-xl space-y-1.5">
                 <div className="flex justify-between text-xs text-gray-600 font-medium">
                   <span>Base Price per PAX</span>
-                  <span>₹{basePrice.toLocaleString('en-IN')}</span>
+                  <span>₹{Math.round(quote.baseAmount / (formData.pax || 1)).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600 font-medium">
                   <span>Total PAX</span>

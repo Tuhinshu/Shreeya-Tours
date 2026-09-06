@@ -142,7 +142,6 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
         <BookingForm
           packageId={tour.id}
           packageName={tour.name}
-          basePrice={tour.basePrice}
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { proxyToBackend } from '@/lib/apiProxy';
 
 export async function POST(request: Request) {
   try {
@@ -12,17 +13,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { orderId } = body;
 
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const res = await fetch(`${backendUrl}/api/payments/mock-complete`, {
+    return await proxyToBackend({
+      path: '/api/payments/mock-complete',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId }),
+      body: { orderId }
     });
-
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ success: false, error: errMsg }, { status: 500 });
   }
 }
+

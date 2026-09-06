@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, Testting-and-Corrections ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, Testting-and-Corrections ]
 
 jobs:
   backend-test:
@@ -57,10 +57,17 @@ jobs:
       - name: Run Frontend Lint
         run: npm run lint
 
+      - name: Run Frontend Type Check
+        run: npx tsc --noEmit
+
       - name: Run Frontend Production Build
         run: npm run build
         env:
+          NODE_ENV: production
           NEXT_PUBLIC_API_URL: https://api.shreeyatours.com
+          NEXT_PUBLIC_WHATSAPP_NUMBER: "916353818605"
+          NEXT_PUBLIC_CONTACT_EMAIL: "shreeyatours19@gmail.com"
           NEXT_PUBLIC_SITE_PHONE: "+91 98765 43210"
           NEXT_PUBLIC_SITE_EMAIL: "support@shreeyatours.com"
           NEXT_PUBLIC_SITE_OFFICE: "Ahmedabad, Gujarat, India"
+

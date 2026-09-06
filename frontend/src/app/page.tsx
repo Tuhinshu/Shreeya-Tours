@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MOCK_TOURS } from '@/utils/mockData';
+import { PACKAGES } from '@/data/packages';
 import ReviewsCarousel from '@/components/ReviewsCarousel';
 import { SITE_CONFIG } from '@/config/site';
 
@@ -48,8 +48,8 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Filter mock tours
-  const filteredTours = MOCK_TOURS.filter((tour) => {
+  // Filter tour packages
+  const filteredTours = PACKAGES.filter((tour) => {
     if (activeRegion === 'all') return true;
     return tour.region === activeRegion;
   });

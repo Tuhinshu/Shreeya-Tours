@@ -1,11 +1,11 @@
-import { TourPackage, MOCK_TOURS } from './mockData';
+import { TourPackage, PACKAGES } from '@/data/packages';
 
 /**
  * Duplicate Prevention Guard:
  * Validates that no single image asset is reused across different tour packages.
  * Guarantees that each tour package maintains its own distinct set of authentic photos.
  */
-export function validateTourImageUniqueness(tours: TourPackage[] = MOCK_TOURS): boolean {
+export function validateTourImageUniqueness(tours: TourPackage[] = PACKAGES): boolean {
   const seenUrls = new Map<string, string>();
   let hasDuplicate = false;
 
