@@ -1,18 +1,20 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://sdk.cashfree.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com data:;
-  img-src 'self' https://images.unsplash.com https://*.cloudinary.com data: blob:;
-  connect-src 'self' https://sandbox.cashfree.com https://api.cashfree.com https://api.sendgrid.com http://localhost:5000 http://127.0.0.1:5000;
+  img-src 'self' https://images.unsplash.com https://res.cloudinary.com https://*.cloudinary.com data: blob:;
+  connect-src 'self' ws: wss: https://sandbox.cashfree.com https://api.cashfree.com https://api.sendgrid.com http://localhost:5000 http://127.0.0.1:5000;
   frame-src 'self' https://sdk.cashfree.com https://www.google.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'self';
-  upgrade-insecure-requests;
+  ${isProd ? 'upgrade-insecure-requests;' : ''}
 `.replace(/\s{2,}/g, ' ').trim();
 
 const securityHeaders = [
